@@ -64,6 +64,7 @@ def masks_combine(path, include_trunc=True, dest=None):
         else:
             mapping[identifier] = [file]
 
+    # define destination path for combined binaries
     if dest is None:
         destination = os.path.join(path, "combined")
     else:
@@ -97,7 +98,7 @@ def masks_combine(path, include_trunc=True, dest=None):
         combined = binaries[0]
         if len(binaries) > 1:
             for i in range(1, len(binaries)):
-                combined = cv2.bitwise_or(combined, binaries[i])
+                combined = cv2.bitwise_or(combined, binaries[i])    # Combine all associated masks bitwise
         filename = os.path.join(destination, (key + "_mask.png"))
         cv2.imwrite(filename, combined)
 
