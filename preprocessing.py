@@ -12,7 +12,7 @@ dest = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\
 source = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\annotations\\0_20180613_3A_4mbar_2800fps_D1B"
 pckl = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
-         "data\\freja\\pickles\\0_20180613_3A_4mbar_2800fps_D1B"
+         "data\\freja\\pickles"
 sample = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B"
 y_path = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
@@ -151,15 +151,14 @@ def pickle_training_data(X_path, y_path, dest, filename='training_data'):
     if not os.path.exists(dest):
         os.mkdir(dest)
 
-    pckl = open(os.path.join(dest) + filename + '.pickle', 'wb')
+    pckl = open(os.path.join(dest, filename) + '.pickle', 'wb')
     pickle.dump(data, pckl)
     pckl.close()
 
     print("Pickle saved to:\n" + dest)
 
 
-"""
 mask_generate_blank(sample, dest)
 masks_combine(source, dest=dest)
 pickle_training_data(sample, y_path, pckl, filename="0_20180613_3A_4mbar_2800fps_D1B")
-"""
+
