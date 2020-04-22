@@ -1,15 +1,15 @@
 # coding: utf-8
 
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-import cv2
-import pickle
-import sys
 import glob
-import shutil
+import os
+import pickle
 import random
+import shutil
+import sys
 
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
 DATA_DIR = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data"
 
@@ -57,37 +57,57 @@ def masks_combine(path, include_trunc=True, dest=None):
     for file in files:
         # split the filename such that we we can match the masks
         identifier = file.split('.')[0]
-        num = identifier.split('_')[5]
 
         # add files to a dictionary mapping a file-id to its masks
-        if num in mapping:
-            mapping[num].append(file)
+        if identifier in mapping:
+            mapping[identifier].append(file)
         else:
-            mapping[num] = [file]
+            mapping[identifier] = [file]
 
+    # define destination path for combined binaries
     if dest is None:
         destination = os.path.join(path, "combined")
     else:
+        if not os.path.exists(dest):
+            os.mkdir(dest)
+
         destination = dest
 
     if not os.path.exists(destination):
         os.mkdir(destination)
 
     # combine binaries
-    for key, masks in mapping:
-        imgs = []
+    for key, masks in mapping.items():
+        binaries = []
 
         for mask in masks:
             img = cv2.imread(os.path.join(path, mask))
             _, green, red = cv2.split(img)
+            height, width, _ = img.shape
 
             # convert green and red part of images to binary
-            _, r_binary = cv2.threshold(red, 10, 255, cv2.THRESH_BINARY)
-            _, g_binary = cv2.threshold(green, 10, 255, cv2.THRESH_BINARY)
+            if red.max() > 0:
+                _, binary = cv2.threshold(red, 1, 255, cv2.THRESH_BINARY)
+            elif (include_trunc) and (green.max() > 0):
+                _, binary = cv2.threshold(green, 1, 255, cv2.THRESH_BINARY)
+            else:
+                binary = np.zeros((height, width), np.uint8)    # make a blank image
 
+            binaries.append(binary)
 
+        combined = binaries[0]
+        if len(binaries) > 1:
+            for i in range(1, len(binaries)):
+                combined = cv2.bitwise_or(combined, binaries[i])    # Combine all associated masks bitwise
+        filename = os.path.join(destination, (key + "_mask.png"))
+        cv2.imwrite(filename, combined)
 
+    return None
 
+path = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\annotations"
+dest = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\annotations_combined"
+
+masks_combine(path, dest=dest)
 
 
 class DataHandler:
