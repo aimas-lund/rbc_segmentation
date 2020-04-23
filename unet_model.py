@@ -10,6 +10,12 @@ SHAPE = [HEIGHT, WIDTH, DEPTH]
 TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\pickles"
 
 def load_img(file, cast=None):
+    """
+    Loads an image and casts it as a tensorflow Tensor class
+    :param file: Full path of image file
+    :param cast: Type of cast performed on the image (default = no casting)
+    :return: Tensor
+    """
     file_type = file.split('.')[-1].lower()
     img = tf.io.read_file(file)
 
@@ -22,6 +28,28 @@ def load_img(file, cast=None):
         img = tf.cast(img, cast)
 
     return img
+
+
+def downsample(filters, size, apply_norm=True):
+    """
+        Downsamples an input using either Batchnorm, Dropout (optional) and ReLU
+        All credit goes to https://github.com/tensorflow/examples/blob/master/tensorflow_examples/models/pix2pix/pix2pix.py
+        :return: Downsample Sequential Model
+    """
+    initializer = tf.random_normal_initializer(0., 0.02)
+
+    result = tf.keras.Sequential()
+    result.add(
+        tf.keras.layers.Conv2D(filters, size, strides=2, padding='same',
+                               kernel_initializer=initializer, use_bias=False))
+
+    if apply_norm:
+        result.add(tf.keras.layers.BatchNormalization())
+
+    result.add(tf.keras.layers.ReLU())  #TODO: potentially also implement LeakyReLU
+
+    return result
+
 
 def upsample(filters, size, apply_dropout=False):
     """
@@ -49,9 +77,20 @@ def upsample(filters, size, apply_dropout=False):
     return result
 
 
-def unet(output_chan, shape):
+def unet_generator(output_chan, shape, output_channels=1):
     input = tf.keras.layers.Input(shape=shape)
     model = input
+
+    """
+    Intermediate layers go here
+    """
+
+    out_layer = tf.keras.layers.Conv2DTranspose(
+        output_channels, 3, strides=2, padding='same',
+        activation='sigmoid'
+    )
+
+    model = out_layer(model)
 
     return tf.keras.Model(inputs=input, outputs=model)
 

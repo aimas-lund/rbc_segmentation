@@ -1,9 +1,15 @@
-from unet_model import SegmentationModel
+import pickle
 
-seg_model = SegmentationModel()
-seg_model.model = 1
+import cv2
 
-path = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\trained_models"
-filename = "test"
-seg_model.save_model(path, filename)
-seg_model.save_model(path, filename)
+file_path = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
+            "data\\freja\\pickles\\0_20180613_3A_4mbar_2800fps_D1B.pickle"
+
+file = open(file_path, 'rb')
+X, y = pickle.load(file)
+file.close()
+
+cv2.imshow('original', X[2])
+cv2.imshow('mask', y[2])
+cv2.waitKey(0)
+cv2.destroyAllWindows()

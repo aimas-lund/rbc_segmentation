@@ -18,7 +18,8 @@ sample = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Projec
 y_path = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
 
-
+def sort_order(filename):
+    return int(filename.split('_')[1].split('.')[0])
 
 def find_masks(filenames, token='mask', bool=False):
     if type(filenames) is list:
@@ -123,6 +124,7 @@ def masks_combine(path, include_trunc=True, dest=None):
 
 def extract_sample(path):
     files = os.listdir(path)
+    indices = []
     imgs = []
 
     for file in files:
@@ -130,7 +132,11 @@ def extract_sample(path):
             filepath = os.path.join(path, file)
             imgs.append(cv2.imread(filepath))
 
-    return imgs, files
+            # extract index
+            lhs = file.split('.')[0]
+            indices.append(int(lhs.split('_')[-1]))
+
+    return imgs, indices
 
 
 def pickle_training_data(X_path, y_path, dest, filename='training_data'):
@@ -140,12 +146,15 @@ def pickle_training_data(X_path, y_path, dest, filename='training_data'):
     # Fetching y data
     y_files = os.listdir(y_path)
     y = []
+    y_indices = []
+
 
     for file in y_files:
         y.append(cv2.imread(os.path.join(y_path, file), 0))
+        y_indices.append(int(file.split('_')[-2]))
 
-    X = np.sort(X)
-    y = np.sort(y)
+    #X = np.sort(X)
+    #y = np.sort(y)
     data = (X, y)
 
     if not os.path.exists(dest):
@@ -156,6 +165,7 @@ def pickle_training_data(X_path, y_path, dest, filename='training_data'):
     pckl.close()
 
     print("Pickle saved to:\n" + dest)
+
 
 
 mask_generate_blank(sample, dest)
