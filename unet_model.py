@@ -3,11 +3,6 @@ import pickle
 
 import tensorflow as tf
 
-HEIGHT = 120
-WIDTH = 260
-DEPTH = 3
-SHAPE = [HEIGHT, WIDTH, DEPTH]
-TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\pickles"
 
 def load_img(file, cast=None):
     """
@@ -21,8 +16,8 @@ def load_img(file, cast=None):
 
     if file_type == 'png':
         img = tf.image.decode_png(img)
-    elif (file_type == 'jpg') or (file_type == 'jpeg') :
-        img = tf.image.decode_jpeg()
+    elif (file_type == 'jpg') or (file_type == 'jpeg'):
+        img = tf.image.decode_jpeg(img)
 
     if cast is not None:
         img = tf.cast(img, cast)
@@ -32,9 +27,9 @@ def load_img(file, cast=None):
 
 def downsample(filters, size, apply_norm=True):
     """
-        Downsamples an input using either Batchnorm, Dropout (optional) and ReLU
-        All credit goes to https://github.com/tensorflow/examples/blob/master/tensorflow_examples/models/pix2pix/pix2pix.py
-        :return: Downsample Sequential Model
+    Downsamples an input using either Batchnorm, Dropout (optional) and ReLU
+    All credit goes to https://github.com/tensorflow/examples/blob/master/tensorflow_examples/models/pix2pix/py
+    :return: Downsample Sequential Model
     """
     initializer = tf.random_normal_initializer(0., 0.02)
 
@@ -46,7 +41,7 @@ def downsample(filters, size, apply_norm=True):
     if apply_norm:
         result.add(tf.keras.layers.BatchNormalization())
 
-    result.add(tf.keras.layers.ReLU())  #TODO: potentially also implement LeakyReLU
+    result.add(tf.keras.layers.ReLU())
 
     return result
 
@@ -54,7 +49,7 @@ def downsample(filters, size, apply_norm=True):
 def upsample(filters, size, apply_dropout=False):
     """
     Upsamples an input using either Batchnorm, Dropout (optional) and ReLU
-    All credit goes to https://github.com/tensorflow/examples/blob/master/tensorflow_examples/models/pix2pix/pix2pix.py
+    All credit goes to https://github.com/tensorflow/examples/blob/master/tensorflow_examples/models/pix2pix/py
     :return: Upsample Sequential Model
     """
 
@@ -62,7 +57,8 @@ def upsample(filters, size, apply_dropout=False):
 
     result = tf.keras.Sequential()
     result.add(
-        tf.keras.layers.Conv2DTranspose(filters, size, strides=2,
+        tf.keras.layers.Conv2DTranspose(filters, size,
+                                        strides=2,
                                         padding='same',
                                         kernel_initializer=initializer,
                                         use_bias=False))
@@ -77,24 +73,47 @@ def upsample(filters, size, apply_dropout=False):
     return result
 
 
-def unet_generator(output_chan, shape, output_channels=1):
+def unet_generator(shape, output_channels=1):
     input = tf.keras.layers.Input(shape=shape)
     model = input
 
-    """
-    Intermediate layers go here
-    """
+    down_stack = [
+        downsample(64, 3),
+        downsample(128, 3),
+        downsample(256, 3),
+        downsample(512, 3),
+    ]
+
+    up_stack = [
+        upsample(512, 3),
+        upsample(256, 3),
+        upsample(128, 3),
+        upsample(64, 3),
+    ]
+
+    skips = []
+    for down in down_stack:
+        model = down(model)
+        skips.append(model)
+
+    skips = reversed(skips[:-1])
+
+    for up, skip in zip(up_stack, skips):
+        model = up(model)
+        conc = tf.keras.layers.Concatenate()
+        model = conc([model, skip])
 
     out_layer = tf.keras.layers.Conv2DTranspose(
         output_channels, 3, strides=2, padding='same',
-        activation='sigmoid'
+        activation='softmax'
     )
 
     model = out_layer(model)
 
     return tf.keras.Model(inputs=input, outputs=model)
 
-def save_model(self, model, path, filename, override=False):
+
+def save_model(model, path, filename, override=False):
     """
     Saves a generated/trained model as a pickle file
     :param path: destination path
@@ -106,7 +125,7 @@ def save_model(self, model, path, filename, override=False):
     i = 1
     rt_threshold = 50
 
-    while (not override) and (os.path.exists(f_path)):   # while there is a file, add index until file doesn't exist
+    while (not override) and (os.path.exists(f_path)):  # while there is a file, add index until file doesn't exist
         new_filename = filename + ('_%i.pickle' % i)
         f_path = os.path.join(path, new_filename)
         i += 1
@@ -118,4 +137,31 @@ def save_model(self, model, path, filename, override=False):
     new_file = open(f_path, 'wb')
     pickle.dump(model, new_file)
     new_file.close()
+
+
+def load_pickle(path, filename):
+    f_path = os.path.join(path, filename + '.pickle')
+
+    file = open(f_path, 'rb')
+    output = pickle.load(file)
+    file.close()
+
+    return output
+
+########################################
+# Model creation
+########################################
+
+HEIGHT = 120
+WIDTH = 260
+DEPTH = 3
+SHAPE = [HEIGHT, WIDTH, DEPTH]
+TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\pickles"
+TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+MODEL_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\trained_models"
+MODEL_NAME = "unet.pickle"
+
+OUTPUT_CHANNELS = 3
+
+model = unet_generator(SHAPE)
 
