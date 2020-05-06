@@ -77,20 +77,19 @@ def unet_generator(shape, output_channels=1):
     input = tf.keras.layers.Input(shape=shape)
     model = input
 
+    # define encoding part of the model
     down_stack = [
         downsample(64, 3),
         downsample(128, 3),
-        downsample(256, 3),
-        downsample(512, 3),
     ]
 
+    # define the decoding part of the model
     up_stack = [
-        upsample(512, 3),
-        upsample(256, 3),
         upsample(128, 3),
         upsample(64, 3),
     ]
 
+    # define where in the model the skips should be made
     skips = []
     for down in down_stack:
         model = down(model)
@@ -98,6 +97,7 @@ def unet_generator(shape, output_channels=1):
 
     skips = reversed(skips[:-1])
 
+    # pair the upsampling (decode) with it's associated skip from the downsampling (encoding)
     for up, skip in zip(up_stack, skips):
         model = up(model)
         conc = tf.keras.layers.Concatenate()
@@ -109,11 +109,12 @@ def unet_generator(shape, output_channels=1):
     )
 
     model = out_layer(model)
+    model = tf.keras.Model(inputs=input, outputs=model)
 
-    return tf.keras.Model(inputs=input, outputs=model)
+    return model
 
 
-def save_model(model, path, filename, override=False):
+def save_pickle(content, path, filename, override=False):
     """
     Saves a generated/trained model as a pickle file
     :param path: destination path
@@ -135,7 +136,7 @@ def save_model(model, path, filename, override=False):
 
     # save model on specified path
     new_file = open(f_path, 'wb')
-    pickle.dump(model, new_file)
+    pickle.dump(content, new_file)
     new_file.close()
 
 
@@ -148,9 +149,11 @@ def load_pickle(path, filename):
 
     return output
 
+
 ########################################
 # Model creation
 ########################################
+
 
 HEIGHT = 120
 WIDTH = 260
@@ -158,10 +161,18 @@ DEPTH = 3
 SHAPE = [HEIGHT, WIDTH, DEPTH]
 TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\pickles"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-MODEL_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\trained_models"
-MODEL_NAME = "unet.pickle"
+CALLBACK_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\callbacks"
+CALLBACK_NAME = "unet1.ckpt"
 
 OUTPUT_CHANNELS = 3
 
 model = unet_generator(SHAPE)
+model_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CALLBACK_PATH, CALLBACK_NAME),
+                                                    save_weights_only=True,
+                                                    verbose=1)
+model.compile(optimizer='adam',
+              loss=tf.losses.BinaryCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+model.summary()
 
+# training the model
