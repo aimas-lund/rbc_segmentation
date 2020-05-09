@@ -1,7 +1,10 @@
 import os
 import pickle
 
+import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
+from tensorflow.keras.layers import *
 
 
 def load_img(file, cast=None):
@@ -35,13 +38,16 @@ def downsample(filters, size, apply_norm=True):
 
     result = tf.keras.Sequential()
     result.add(
-        tf.keras.layers.Conv2D(filters, size, strides=2, padding='same',
-                               kernel_initializer=initializer, use_bias=False))
+        Conv2D(filters, size,
+               strides=2,
+               padding='same',
+               kernel_initializer=initializer,
+               use_bias=True))
 
     if apply_norm:
-        result.add(tf.keras.layers.BatchNormalization())
+        result.add(BatchNormalization())
 
-    result.add(tf.keras.layers.ReLU())
+    result.add(ReLU())
 
     return result
 
@@ -57,24 +63,24 @@ def upsample(filters, size, apply_dropout=False):
 
     result = tf.keras.Sequential()
     result.add(
-        tf.keras.layers.Conv2DTranspose(filters, size,
-                                        strides=2,
-                                        padding='same',
-                                        kernel_initializer=initializer,
-                                        use_bias=False))
+        Conv2DTranspose(filters, size,
+                        strides=2,
+                        padding='same',
+                        kernel_initializer=initializer,
+                        use_bias=False))
 
-    result.add(tf.keras.layers.BatchNormalization())
+    result.add(BatchNormalization())
 
     if apply_dropout:
-        result.add(tf.keras.layers.Dropout(0.5))
+        result.add(Dropout(0.5))
 
-    result.add(tf.keras.layers.ReLU())
+    result.add(ReLU())
 
     return result
 
 
 def unet_generator(shape, down_stack, up_stack, output_channels=1):
-    input = tf.keras.layers.Input(shape=shape)
+    input = Input(shape=shape)
     model = input
 
     # define where in the model the skips should be made
@@ -88,12 +94,14 @@ def unet_generator(shape, down_stack, up_stack, output_channels=1):
     # pair the upsampling (decode) with it's associated skip from the downsampling (encoding)
     for up, skip in zip(up_stack, skips):
         model = up(model)
-        conc = tf.keras.layers.Concatenate()
+        conc = Concatenate()
         model = conc([model, skip])
 
-    out_layer = tf.keras.layers.Conv2DTranspose(
-        output_channels, 3, strides=2, padding='same',
-        activation='softmax'
+    out_layer = Conv2DTranspose(
+        output_channels,
+        kernel_size=3,
+        strides=2,
+        padding='same'
     )
 
     model = out_layer(model)
@@ -129,7 +137,12 @@ def save_pickle(content, path, filename, override=False):
 
 
 def load_pickle(path, filename):
-    f_path = os.path.join(path, filename + '.pickle')
+    filetype = filename.split('.')[-1]
+
+    if filetype.lower() != 'pickle':
+        f_path = os.path.join(path, filename + '.pickle')
+    else:
+        f_path = os.path.join(path, filename)
 
     file = open(f_path, 'rb')
     output = pickle.load(file)
@@ -138,8 +151,23 @@ def load_pickle(path, filename):
     return output
 
 
-########################################
-# Model creation
-########################################
+def create_mask(pred_mask):
+    pred_mask = tf.argmax(pred_mask, axis=-1)
+    pred_mask = pred_mask[..., tf.newaxis]
+    return pred_mask[0]
 
+def display_prediction(tensor):
+    """
+    Convert tensor to a plottable format
+    :param tensor:
+    :return:
+    """
+    title = "Output Image"
+    img = tensor
+    if len(np.shape(tensor)) > 3:
+        img = img[0]
 
+    plt.title(title)
+    plt.imshow(tf.keras.preprocessing.image.array_to_img(img))
+    plt.axis('off')
+    plt.show()

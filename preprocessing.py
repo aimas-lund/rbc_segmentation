@@ -5,6 +5,7 @@ import pickle
 
 import cv2
 import numpy as np
+import tensorflow as tf
 
 DATA_DIR = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data"
 dest = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\" \
@@ -12,20 +13,22 @@ dest = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\
 source = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\annotations\\0_20180613_3A_4mbar_2800fps_D1B"
 pckl = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
-         "data\\freja\\pickles"
+       "data\\freja\\pickles"
 sample = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B"
 y_path = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
 
+
 def sort_order(filename):
     return int(filename.split('_')[1].split('.')[0])
+
 
 def find_masks(filenames, token='mask', bool=False):
     if type(filenames) is list:
         filenames = np.array(filenames)
 
-    masks_b = np.full(len(filenames), False)   # allocate memory
+    masks_b = np.full(len(filenames), False)  # allocate memory
 
     for idx, file in enumerate(filenames):
         if token in file:
@@ -35,6 +38,7 @@ def find_masks(filenames, token='mask', bool=False):
         return masks_b
     else:
         return filenames[masks_b]
+
 
 def mask_generate_blank(path, dest):
     files = os.listdir(path)
@@ -65,8 +69,8 @@ def mask_separation(extractor, index):
             img = cv2.imread(os.path.join(smpl_path, mask))
             cv2.imwrite(os.path.join(dest_path, mask), img)
 
-def masks_combine(path, include_trunc=True, dest=None):
 
+def masks_combine(path, include_trunc=True, dest=None):
     # match separate masks belonging to the same image
     files = os.listdir(path)
     mapping = dict()
@@ -108,14 +112,14 @@ def masks_combine(path, include_trunc=True, dest=None):
             elif (include_trunc) and (green.max() > 0):
                 _, binary = cv2.threshold(green, 1, 255, cv2.THRESH_BINARY)
             else:
-                binary = np.zeros((height, width), np.uint8)    # make a blank image
+                binary = np.zeros((height, width), np.uint8)  # make a blank image
 
             binaries.append(binary)
 
         combined = binaries[0]
         if len(binaries) > 1:
             for i in range(1, len(binaries)):
-                combined = cv2.bitwise_or(combined, binaries[i])    # Combine all associated masks bitwise
+                combined = cv2.bitwise_or(combined, binaries[i])  # Combine all associated masks bitwise
         filename = os.path.join(destination, (key + "_mask.png"))
         cv2.imwrite(filename, combined)
 
@@ -148,13 +152,12 @@ def pickle_training_data(X_path, y_path, dest, filename='training_data'):
     y = []
     y_indices = []
 
-
     for file in y_files:
         y.append(cv2.imread(os.path.join(y_path, file), 0))
         y_indices.append(int(file.split('_')[-2]))
 
-    #X = np.sort(X)
-    #y = np.sort(y)
+    # X = np.sort(X)
+    # y = np.sort(y)
     data = (X, y)
 
     if not os.path.exists(dest):
@@ -167,8 +170,28 @@ def pickle_training_data(X_path, y_path, dest, filename='training_data'):
     print("Pickle saved to:\n" + dest)
 
 
+def preprocess_image(img, dtype, resize=None, cast=False):
+    """
+    Prepares a single image as input for the NN model
+    :param cast:
+    :param img: Image array
+    :param dtype: tensorflow data type
+    :param resize: tuple of: width * height
+    :return: Tensor
+    """
+    if resize is not None:
+        img = tf.image.resize(img, resize)
 
+    if cast:
+        img = tf.cast(img, dtype) / 255.0
+    else:
+        img = img / 255.0
+
+    return img
+
+
+"""
 mask_generate_blank(sample, dest)
 masks_combine(source, dest=dest)
 pickle_training_data(sample, y_path, pckl, filename="0_20180613_3A_4mbar_2800fps_D1B")
-
+"""
