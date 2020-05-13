@@ -1,7 +1,5 @@
 import math
 
-import numpy as np
-
 from preprocessing import preprocess_image
 from unet_model import *
 
@@ -77,6 +75,7 @@ model.fit(X_train,
 pred = model.predict(np.expand_dims(X_valid[8], axis=0))
 pred_mask = create_mask(pred)
 pred_img = tf.keras.preprocessing.image.array_to_img(pred_mask)
-display_prediction(X_valid[8])
+display_prediction(X_train[5])
+display_prediction(y_train[5])
 display_prediction(pred_mask)
 display_prediction(pred)
