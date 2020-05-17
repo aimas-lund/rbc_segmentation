@@ -15,6 +15,29 @@ D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.2
 
+#############################################
+# Data Pre-Processing
+#############################################
+
+X_raw, y_raw = load_pickle(TRAINING_PATH, TRAINING_FILE)
+X = []
+y = []
+
+for i in range(len(X_raw)):
+    img_y = np.expand_dims(y_raw[i], -1)
+    X.append(X_raw[i] / 255.)
+    y.append(img_y / 255.)
+
+
+X = np.array(X)
+y = np.array(y)
+VALID_SIZE = math.floor(VALID_FRAC * len(X_raw))   # specifies the training data split
+
+X_train = X[VALID_SIZE:]
+X_valid = X[:VALID_SIZE]
+y_train = y[VALID_SIZE:]
+y_valid = y[:VALID_SIZE]
+
 # define encoding part of the model
 down_stack = [
     downsample(128, 3),
@@ -32,41 +55,16 @@ model = unet_generator(SHAPE, down_stack, up_stack)
 model_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CALLBACK_PATH, CALLBACK_NAME),
                                                     save_weights_only=True,
                                                     verbose=1)
-model.compile(optimizer='adam',
+opt = tf.keras.optimizers.Adam(learning_rate=0.0001)   # optimizer and specified learning rate
+model.compile(optimizer=opt,
               loss=tf.losses.BinaryCrossentropy(from_logits=True),
               metrics=['accuracy'])
 model.summary()
 tf.keras.utils.plot_model(model, show_shapes=True)
 
-# training the model
-X_raw, y_raw = load_pickle(TRAINING_PATH, TRAINING_FILE)
-X = []
-y = []
-
-for i in range(len(X_raw)):
-    X.append(X_raw[i] / 255.)
-    y.append(y_raw[i] / 255.)
-
-
-X = np.array(X)
-y = np.array(y)
-y = np.expand_dims(y, axis=-1) # add an extra dimension to the true data
-
-VALID_SIZE = math.floor(VALID_FRAC * len(X_raw))
-
-X_train = X[VALID_SIZE:]
-X_valid = X[:VALID_SIZE]
-y_train = y[VALID_SIZE:]
-y_valid = y[:VALID_SIZE]
-
-#dataset_train = tf.data.Dataset.from_tensor_slices((X_train, y_train))
-#dataset_valid = tf.data.Dataset.from_tensor_slices((X_valid, y_valid))
-
-print("\nData Preprocessing Complete!")
-
 model.fit(X_train,
           y_train,
-          epochs=3,
+          epochs=15,
           batch_size=2,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
@@ -74,7 +72,6 @@ model.fit(X_train,
 pred = model.predict(np.expand_dims(X_valid[8], axis=0))
 pred_mask = create_mask(pred)
 pred_img = tf.keras.preprocessing.image.array_to_img(pred_mask)
-display_prediction(X_valid[7])
-display_prediction(y_valid[7])
-display_prediction(pred_mask)
+display_prediction(X_valid[8])
+display_prediction(y_valid[8])
 display_prediction(pred)
