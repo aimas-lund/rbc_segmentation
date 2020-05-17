@@ -101,7 +101,39 @@ def unet_generator(shape, down_stack, up_stack, output_channels=1):
         output_channels,
         kernel_size=3,
         strides=2,
-        padding='same'
+        padding='same',
+        activation='sigmoid'
+    )
+
+    model = out_layer(model)
+    model = tf.keras.Model(inputs=input, outputs=model)
+
+    return model
+
+def unet_dense_generator(shape, down_stack, up_stack, output_channels=1):
+    input = Input(shape=shape)
+    model = input
+
+    # define where in the model the skips should be made
+    skips = []
+    for down in down_stack:
+        model = down(model)
+        skips.append(model)
+
+    skips = reversed(skips[:-1])
+
+    # pair the upsampling (decode) with it's associated skip from the downsampling (encoding)
+    for up, skip in zip(up_stack, skips):
+        model = up(model)
+        conc = Concatenate()
+        model = conc([model, skip])
+
+    out_layer = Conv2DTranspose(
+        output_channels,
+        kernel_size=3,
+        strides=2,
+        padding='same',
+        activation='sigmoid'
     )
 
     model = out_layer(model)
@@ -155,6 +187,7 @@ def create_mask(pred_mask):
     pred_mask = tf.argmax(pred_mask, axis=-1)
     pred_mask = pred_mask[..., tf.newaxis]
     return pred_mask[0]
+
 
 def display_prediction(tensor):
     """

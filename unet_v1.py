@@ -1,6 +1,5 @@
 import math
 
-from preprocessing import preprocess_image
 from unet_model import *
 
 HEIGHT = 120
@@ -45,8 +44,8 @@ X = []
 y = []
 
 for i in range(len(X_raw)):
-    X.append(preprocess_image(X_raw[i], D_TYPE))
-    y.append(preprocess_image(y_raw[i], D_TYPE))
+    X.append(X_raw[i] / 255.)
+    y.append(y_raw[i] / 255.)
 
 
 X = np.array(X)
@@ -75,7 +74,7 @@ model.fit(X_train,
 pred = model.predict(np.expand_dims(X_valid[8], axis=0))
 pred_mask = create_mask(pred)
 pred_img = tf.keras.preprocessing.image.array_to_img(pred_mask)
-display_prediction(X_train[5])
-display_prediction(y_train[5])
+display_prediction(X_valid[7])
+display_prediction(y_valid[7])
 display_prediction(pred_mask)
 display_prediction(pred)

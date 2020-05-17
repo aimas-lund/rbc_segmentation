@@ -10,12 +10,14 @@ import tensorflow as tf
 DATA_DIR = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data"
 dest = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\" \
        "freja\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
+dest2 = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
+        "data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B"
 source = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\annotations\\0_20180613_3A_4mbar_2800fps_D1B"
 pckl = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
        "data\\freja\\pickles"
 sample = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
-         "data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B"
+         "data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B_plus_masks"
 y_path = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
 
@@ -126,6 +128,21 @@ def masks_combine(path, include_trunc=True, dest=None):
     return None
 
 
+def get_filenames(path, masks=False):
+    files = os.listdir(path)
+    file_names = []
+
+    for file in files:
+        if masks:
+            if 'mask' in file:
+                file_names.append(os.path.join(path, file))
+        else:
+            if not 'mask' in file:
+                file_names.append(os.path.join(path, file))
+
+    return file_names
+
+
 def extract_sample(path):
     files = os.listdir(path)
     indices = []
@@ -141,6 +158,15 @@ def extract_sample(path):
             indices.append(int(lhs.split('_')[-1]))
 
     return imgs, indices
+
+
+def move_images(path, dest):
+    files = os.listdir(path)
+    for file in files:
+        if not 'mask' in file:
+            filepath = os.path.join(path, file)
+            img = cv2.imread(filepath)
+            cv2.imwrite(os.path.join(dest, file), img)
 
 
 def pickle_training_data(X_path, y_path, dest, filename='training_data'):
@@ -170,17 +196,23 @@ def pickle_training_data(X_path, y_path, dest, filename='training_data'):
     print("Pickle saved to:\n" + dest)
 
 
-def preprocess_image(img, dtype, resize=None, cast=False):
+def preprocess_image(img, dtype, new_shape=None, cast=False):
     """
     Prepares a single image as input for the NN model
     :param cast:
     :param img: Image array
     :param dtype: tensorflow data type
-    :param resize: tuple of: width * height
+    :param new_shape: tuple of: width * height
     :return: Tensor
     """
-    if resize is not None:
-        img = tf.image.resize(img, resize)
+
+    img = tf.convert_to_tensor(img, dtype=dtype)
+
+    if new_shape is not None:
+        img = tf.image.resize_with_pad(img,
+                                       target_width=new_shape[0],
+                                       target_height=new_shape[1],
+                                       method='bilinear')
 
     if cast:
         img = tf.cast(img, dtype) / 255.0
@@ -188,7 +220,6 @@ def preprocess_image(img, dtype, resize=None, cast=False):
         img = img / 255.0
 
     return img
-
 
 """
 mask_generate_blank(sample, dest)
