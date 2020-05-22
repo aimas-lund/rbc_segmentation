@@ -79,7 +79,8 @@ def upsample(filters, size, apply_dropout=False):
     return result
 
 
-def unet_generator(shape, down_stack, up_stack, output_channels=1):
+def unet_generator(shape, down_stack, up_stack,
+                   output_channels=1):
     input = Input(shape=shape)
     model = input
 
@@ -110,7 +111,11 @@ def unet_generator(shape, down_stack, up_stack, output_channels=1):
 
     return model
 
-def unet_dense_generator(shape, down_stack, up_stack, output_channels=1):
+
+def unet_dense_generator(shape, down_stack, up_stack,
+                         output_channels=1,
+                         dense_layers=2,
+                         neuron_num=865):
     input = Input(shape=shape)
     model = input
 
@@ -128,15 +133,29 @@ def unet_dense_generator(shape, down_stack, up_stack, output_channels=1):
         conc = Concatenate()
         model = conc([model, skip])
 
-    out_layer = Conv2DTranspose(
+    transpose = Conv2DTranspose(
         output_channels,
         kernel_size=3,
         strides=2,
         padding='same',
-        activation='sigmoid'
+        activation='relu'
     )
 
-    model = out_layer(model)
+    model = transpose(model)
+    model = Flatten()(model)
+
+    # add dense layers
+    output_neurons = shape[0]*shape[1]
+
+    for _ in range(dense_layers-1):
+        dense = Dense(neuron_num,
+                      activation='relu')
+        model = dense(model)
+
+    output_layer = Dense(output_neurons,
+                         activation='sigmoid')
+
+    model = output_layer(model)
     model = tf.keras.Model(inputs=input, outputs=model)
 
     return model

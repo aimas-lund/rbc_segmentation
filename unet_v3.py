@@ -14,11 +14,13 @@ TRAINING_PATH_X = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachel
 TRAINING_PATH_Y = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja" \
                   "\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
 CALLBACK_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\callbacks"
-CALLBACK_NAME = "unet2.ckpt"
+CALLBACK_NAME = "unet3.ckpt"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.2
+DENSE_LAYERS = 4
+NEURON_NUM = 200
 
 #############################################
 # Data Pre-Processing
@@ -33,7 +35,7 @@ for i in range(len(X_raw)):
     img_y = np.expand_dims(y_raw[i], -1)
     img_y = tf.image.resize_with_pad(img_y, 256, 256, method='bilinear')
     X.append(img_x.numpy() / 255.)
-    y.append(img_y.numpy() / 255.)
+    y.append(img_y.numpy().flatten() / 255.)
 
 
 X = np.array(X)
@@ -67,7 +69,9 @@ up_stack = [
 ]
 
 # generate and compile model
-model = unet_generator(NEW_SHAPE, down_stack, up_stack)
+model = unet_dense_generator(NEW_SHAPE, down_stack, up_stack,
+                            dense_layers=DENSE_LAYERS,
+                            neuron_num=NEURON_NUM)
 model_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CALLBACK_PATH, CALLBACK_NAME),
                                                     save_weights_only=True,
                                                     verbose=1)
@@ -86,13 +90,16 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=20,
+          epochs=3,
           batch_size=1,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
 
 pred = model.predict(np.expand_dims(X_valid[8], axis=0))
 
+y_v = np.reshape(y_valid[8], (256, 256, 1))
+pred = np.reshape(pred, (256, 256, 1))
+
 display_prediction(X_valid[8])
-display_prediction(y_valid[8])
+display_prediction(y_v)
 display_prediction(pred)

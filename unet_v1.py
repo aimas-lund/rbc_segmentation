@@ -70,8 +70,6 @@ model.fit(X_train,
           callbacks=[model_callback])  # Pass callback to training
 
 pred = model.predict(np.expand_dims(X_valid[8], axis=0))
-pred_mask = create_mask(pred)
-pred_img = tf.keras.preprocessing.image.array_to_img(pred_mask)
 display_prediction(X_valid[8])
 display_prediction(y_valid[8])
 display_prediction(pred)
