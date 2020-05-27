@@ -14,8 +14,8 @@ TRAINING_PATH = PATH + "\\data\\freja\\pickles"
 TRAINING_PATH_X = PATH + "\\data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B"
 TRAINING_PATH_Y = PATH + "\\data\\freja\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
 CALLBACK_PATH = PATH + "\\callbacks"
-CALLBACK_NAME = "unet1.ckpt"
-TRAINED_MODEL_PATH = PATH + "\\trained_models\\unet1"
+CALLBACK_NAME = "unet4.ckpt"
+TRAINED_MODEL_PATH = PATH + "\\trained_models\\unet4"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
@@ -48,6 +48,9 @@ y_train = y[VALID_SIZE:]
 y_valid = y[:VALID_SIZE]
 
 down_stack = [
+    downsample(16, 3),
+    downsample(32, 3),
+    downsample(64, 3),
     downsample(128, 3),
     downsample(256, 3)
 ]
@@ -55,7 +58,10 @@ down_stack = [
 # define the decoding part of the model
 up_stack = [
     upsample(256, 3),
-    upsample(128, 3)
+    upsample(128, 3),
+    upsample(64, 3),
+    upsample(32, 3),
+    upsample(16, 3)
 ]
 
 # generate and compile model
@@ -64,5 +70,6 @@ model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
 y_est = predict_sample(X_valid, model)
 
+#TPR_FPR_plot(y_est, y_valid)
 prec_rec_acc_plot(y_est, y_valid)
 

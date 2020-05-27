@@ -35,11 +35,13 @@ def match(bin_est, bin_true):
 
     return tp, tn, fp, fn
 
+
 def eval_recall_precision(x, y):
     try:
         return x / (x + y)
     except ZeroDivisionError:
         return 0
+
 
 def eval_accuracy(x, y, a, b):
     try:
@@ -49,7 +51,6 @@ def eval_accuracy(x, y, a, b):
 
 
 def predict_sample(X, model):
-
     preds = []
     N = len(X)
 
@@ -58,8 +59,8 @@ def predict_sample(X, model):
 
     return np.array(preds)
 
-def predict_dense_sample(X, model):
 
+def predict_dense_sample(X, model):
     preds = []
     N = len(X)
 
@@ -67,6 +68,7 @@ def predict_dense_sample(X, model):
         preds.append(np.reshape(model.predict(np.expand_dims(X[i], axis=0)), (256, 256, 1)))
 
     return np.array(preds)
+
 
 def sort_flattened(y_est, y_true):
     flat_y_est = y_est.flatten()
@@ -81,7 +83,6 @@ def sort_flattened(y_est, y_true):
 
 
 def TPR_FPR_plot(y_est, y_true):
-
     thresholds = np.arange(0, 1, 0.0005)
     y_est, y_true = sort_flattened(y_est, y_true)
 
@@ -104,8 +105,8 @@ def TPR_FPR_plot(y_est, y_true):
                 fp += 1
 
         x.append(t)
-        y_tp.append(tp/N)
-        y_fp.append(fp/N)
+        y_tp.append(tp / N)
+        y_fp.append(fp / N)
 
     plt.plot(x, y_tp, color=color_dict['blue'])
     plt.plot(x, y_fp, color=color_dict['grey'], linestyle='dashed')
@@ -126,27 +127,20 @@ def prec_rec_acc_plot(y_est, y_true):
     x = thresholds.tolist()
     y_rec = []
     y_pre = []
-    y_acc = []
 
     for idx, t in enumerate(thresholds):
         print("{} of {} iterations.".format(idx + 1, total))
         boolean_est = y_est >= float(t)
-        TP, TN, FP, FN = match(boolean_est, boolean_true)
+        TP, _, FP, FN = match(boolean_est, boolean_true)
 
         y_rec.append(eval_recall_precision(TP, FN))
         y_pre.append(eval_recall_precision(TP, FP))
-        y_acc.append(eval_accuracy(TP, TN, FP, FN))
 
     # print precision and recall
     plt.plot(x, y_pre, color=color_dict['blue'])
-    plt.plot(x, y_rec, color=color_dict['purple'], linestyle='dashed')
-    plt.plot(x, y_acc, color=color_dict['grey'], linestyle='dashdot')
+    plt.plot(x, y_rec, color=color_dict['grey'], linestyle='dashed')
     plt.legend(['Precision', 'Recall', 'Accuracy'])
     plt.xlabel('threshold')
     plt.ylabel('rate')
     plt.grid()
     plt.show()
-
-
-
-
