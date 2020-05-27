@@ -18,9 +18,9 @@ CALLBACK_NAME = "unet3.ckpt"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
-VALID_FRAC = 0.2
+VALID_FRAC = 0.15
 DENSE_LAYERS = 4
-NEURON_NUM = 200
+NEURON_NUM = 400
 
 #############################################
 # Data Pre-Processing
@@ -90,7 +90,7 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=3,
+          epochs=15,
           batch_size=1,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training

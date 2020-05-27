@@ -13,7 +13,7 @@ CALLBACK_NAME = "unet1.ckpt"
 D_TYPE = tf.float32
 
 OUTPUT_CHANNELS = 1
-VALID_FRAC = 0.2
+VALID_FRAC = 0.15
 
 #############################################
 # Data Pre-Processing
@@ -64,12 +64,7 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 
 model.fit(X_train,
           y_train,
-          epochs=15,
+          epochs=20,
           batch_size=2,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
-
-pred = model.predict(np.expand_dims(X_valid[8], axis=0))
-display_prediction(X_valid[8])
-display_prediction(y_valid[8])
-display_prediction(pred)

@@ -1,5 +1,8 @@
 import math
 
+import numpy as np
+
+from evaluation import predict_sample, TPR_FPR_plot, prec_rec_acc_plot
 from unet_model import *
 
 HEIGHT = 120
@@ -19,6 +22,7 @@ TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
+
 
 #############################################
 # Data Pre-Processing
@@ -45,12 +49,6 @@ X_valid = X[:VALID_SIZE]
 y_train = y[VALID_SIZE:]
 y_valid = y[:VALID_SIZE]
 
-
-#############################################
-# Model Generation
-#############################################
-
-# define encoding part of the model
 down_stack = [
     downsample(32, 3),
     downsample(64, 3),
@@ -68,27 +66,10 @@ up_stack = [
 
 # generate and compile model
 model = unet_generator(NEW_SHAPE, down_stack, up_stack)
-model_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CALLBACK_PATH, CALLBACK_NAME),
-                                                    save_weights_only=True,
-                                                    verbose=1)
-opt = tf.keras.optimizers.Adam(learning_rate=0.00005)   # optimizer and specified learning rate
-model.compile(optimizer=opt,
-              loss=tf.losses.BinaryCrossentropy(from_logits=True),
-              metrics=['accuracy'])
-model.summary()   # prints a summary of the model
-tf.keras.utils.plot_model(model, show_shapes=True)
+model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
+y_est = predict_sample(X_valid, model)
 
-#############################################
-# Model Fitting
-#############################################
+TPR_FPR_plot(y_est, y_valid)
+prec_rec_acc_plot(y_est, y_valid)
 
-# training the model
-model.fit(X_train,
-          y_train,
-          epochs=20,
-          batch_size=1,
-          validation_data=(X_valid, y_valid),
-          callbacks=[model_callback])  # Pass callback to training
-
-model.save(TRAINED_MODEL_PATH)
