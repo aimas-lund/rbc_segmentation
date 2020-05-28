@@ -1,6 +1,6 @@
 import math
 
-from evaluation import predict_sample, prec_rec_acc_plot
+from evaluation import predict_sample, show_estimations
 from unet_model import *
 
 HEIGHT = 120
@@ -70,6 +70,7 @@ model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
 y_est = predict_sample(X_valid, model)
 
+show_estimations(y_est)
 #TPR_FPR_plot(y_est, y_valid)
-prec_rec_acc_plot(y_est, y_valid)
+#prec_rec_acc_plot(y_est, y_valid)
 

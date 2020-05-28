@@ -169,7 +169,12 @@ def save_pickle(content, path, filename, override=False):
     :param override: boolean to determine if already stored files may be overwritten
     :return:
     """
-    f_path = os.path.join(path, filename) + '.pickle'
+    filetype = filename.split('.')[-1]
+
+    if filetype.lower() != 'pickle':
+        f_path = os.path.join(path, filename + '.pickle')
+    else:
+        f_path = os.path.join(path, filename)
     i = 1
     rt_threshold = 50
 

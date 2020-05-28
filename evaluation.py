@@ -144,3 +144,13 @@ def prec_rec_acc_plot(y_est, y_true):
     plt.ylabel('rate')
     plt.grid()
     plt.show()
+
+
+def show_estimations(y_est, dense=False):
+    for im in y_est:
+        if dense:
+            im = np.squeeze(im, axis=-1)
+        else:
+            im = np.squeeze(np.squeeze(im, axis=0), axis=-1)
+        plt.imshow(im, cmap='gray')
+        plt.show()

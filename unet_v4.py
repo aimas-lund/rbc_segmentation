@@ -73,7 +73,7 @@ model = unet_generator(NEW_SHAPE, down_stack, up_stack)
 model_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CALLBACK_PATH, CALLBACK_NAME),
                                                     save_weights_only=True,
                                                     verbose=1)
-opt = tf.keras.optimizers.Adam(learning_rate=0.00005)   # optimizer and specified learning rate
+opt = tf.keras.optimizers.Adam(learning_rate=0.00003)   # optimizer and specified learning rate
 model.compile(optimizer=opt,
               loss=tf.losses.BinaryCrossentropy(from_logits=True),
               metrics=['accuracy', 'mse'])
@@ -88,7 +88,7 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=25,
+          epochs=50,
           batch_size=1,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training

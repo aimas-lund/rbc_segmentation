@@ -86,7 +86,7 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=20,
+          epochs=40,
           batch_size=1,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training

@@ -1,8 +1,6 @@
 import math
 
-import numpy as np
-
-from evaluation import TPR_FPR_plot, prec_rec_acc_plot, predict_dense_sample
+from evaluation import *
 from unet_model import *
 
 HEIGHT = 120
@@ -80,6 +78,7 @@ y_true_reshaped = np.array(y_true_reshaped)
 y_est = predict_dense_sample(X_valid, model)
 y_est = y_est / y_est.max()
 
-TPR_FPR_plot(y_est, y_true_reshaped)
-prec_rec_acc_plot(y_est, y_true_reshaped)
+show_estimations(y_est, dense=True)
+#TPR_FPR_plot(y_est, y_true_reshaped)
+#prec_rec_acc_plot(y_est, y_true_reshaped)
 
