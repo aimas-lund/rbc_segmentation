@@ -1,6 +1,8 @@
 import math
+import time
 
-from evaluation import predict_sample, show_estimations
+from evaluation import *
+from speed_test_setup import load_big_data
 from unet_model import *
 
 HEIGHT = 120
@@ -17,6 +19,8 @@ CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = "unet4.ckpt"
 TRAINED_MODEL_PATH = PATH + "\\trained_models\\unet4"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+PICKLE_PATH = PATH + "\\pickle"
+PICKLE_NAME = "unet4_time.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
@@ -70,7 +74,21 @@ model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
 y_est = predict_sample(X_valid, model)
 
-show_estimations(y_est)
+big_X = load_big_data()
+big_X_rescaled = []
+print("Big Dataset loaded.")
+reconfig_start = time.time()
+for i in range(len(big_X)):
+    img_x = tf.image.resize_with_pad(big_X[i], 256, 256, method='bilinear')
+    big_X_rescaled.append(img_x.numpy() / 255.)
+
+print(time.time() - reconfig_start)
+print("Big Dataset reconfigured")
+
+t = full_speed_test(np.array(big_X_rescaled), model)
+save_pickle(t, PICKLE_PATH, PICKLE_NAME)
+
+#show_estimations(y_est)
 #TPR_FPR_plot(y_est, y_valid)
 #prec_rec_acc_plot(y_est, y_valid)
 

@@ -1,3 +1,5 @@
+import time
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -154,3 +156,19 @@ def show_estimations(y_est, dense=False):
             im = np.squeeze(np.squeeze(im, axis=0), axis=-1)
         plt.imshow(im, cmap='gray')
         plt.show()
+
+
+def speed_test(X, model):
+    start = time.time()
+    model.predict(X)
+    return time.time() - start
+
+
+def full_speed_test(X, model, iters=20):
+    times = []
+
+    for iter in range(iters):
+        times.append(speed_test(X, model))
+        print("Iteration {} Complete".format(iter + 1))
+
+    return times

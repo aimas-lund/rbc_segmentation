@@ -1,6 +1,7 @@
 import math
 
 from evaluation import *
+from speed_test_setup import load_big_data
 from unet_model import *
 
 HEIGHT = 120
@@ -17,6 +18,8 @@ CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = "unet3.ckpt"
 TRAINED_MODEL_PATH = PATH + "\\trained_models\\unet3"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+PICKLE_PATH = PATH + "\\pickle"
+PICKLE_NAME = "unet3_time.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
@@ -78,7 +81,21 @@ y_true_reshaped = np.array(y_true_reshaped)
 y_est = predict_dense_sample(X_valid, model)
 y_est = y_est / y_est.max()
 
-show_estimations(y_est, dense=True)
+big_X = load_big_data()
+big_X_rescaled = []
+print("Big Dataset loaded.")
+reconfig_start = time.time()
+for i in range(len(big_X)):
+    img_x = tf.image.resize_with_pad(big_X[i], 256, 256, method='bilinear')
+    big_X_rescaled.append(img_x.numpy() / 255.)
+
+print(time.time() - reconfig_start)
+print("Big Dataset reconfigured")
+
+t = full_speed_test(np.array(big_X_rescaled), model)
+save_pickle(t, PICKLE_PATH, PICKLE_NAME)
+
+#show_estimations(y_est, dense=True)
 #TPR_FPR_plot(y_est, y_true_reshaped)
 #prec_rec_acc_plot(y_est, y_true_reshaped)
 
