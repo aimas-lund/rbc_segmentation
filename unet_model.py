@@ -28,7 +28,7 @@ def load_img(file, cast=None):
     return img
 
 
-def downsample(filters, size, apply_norm=True):
+def downsample(filters, size, apply_norm=True, strides=2):
     """
     Downsamples an input using either Batchnorm, Dropout (optional) and ReLU
     All credit goes to https://github.com/tensorflow/examples/blob/master/tensorflow_examples/models/pix2pix/py
@@ -39,7 +39,7 @@ def downsample(filters, size, apply_norm=True):
     result = tf.keras.Sequential()
     result.add(
         Conv2D(filters, size,
-               strides=2,
+               strides=strides,
                padding='same',
                kernel_initializer=initializer,
                use_bias=True))
@@ -52,7 +52,7 @@ def downsample(filters, size, apply_norm=True):
     return result
 
 
-def upsample(filters, size, apply_dropout=False):
+def upsample(filters, size, apply_dropout=False, strides=2):
     """
     Upsamples an input using either Batchnorm, Dropout (optional) and ReLU
     All credit goes to https://github.com/tensorflow/examples/blob/master/tensorflow_examples/models/pix2pix/py
@@ -64,7 +64,7 @@ def upsample(filters, size, apply_dropout=False):
     result = tf.keras.Sequential()
     result.add(
         Conv2DTranspose(filters, size,
-                        strides=2,
+                        strides=strides,
                         padding='same',
                         kernel_initializer=initializer,
                         use_bias=False))
@@ -80,7 +80,7 @@ def upsample(filters, size, apply_dropout=False):
 
 
 def unet_generator(shape, down_stack, up_stack,
-                   output_channels=1):
+                   output_channels=1, strides=2):
     input = Input(shape=shape)
     model = input
 
@@ -101,7 +101,7 @@ def unet_generator(shape, down_stack, up_stack,
     out_layer = Conv2DTranspose(
         output_channels,
         kernel_size=3,
-        strides=2,
+        strides=strides,
         padding='same',
         activation='sigmoid'
     )
@@ -228,3 +228,21 @@ def display_prediction(tensor):
     plt.imshow(tf.keras.preprocessing.image.array_to_img(img))
     plt.axis('off')
     plt.show()
+
+
+def rescale_images(X_raw, y_raw, size=(256, 256)):
+    X = []
+    y = []
+
+    for i in range(len(X_raw)):
+        img_x = tf.image.resize_with_pad(X_raw[i], size[0], size[1], method='bilinear')
+        img_y = np.expand_dims(y_raw[i], -1)
+        img_y = tf.image.resize_with_pad(img_y, size[0], size[1], method='bilinear')
+        X.append(img_x.numpy() / 255.)
+        y.append(img_y.numpy() / 255.)
+
+    X = np.array(X)
+    y = np.array(y)
+    print("Rescale Complete")
+
+    return X, y

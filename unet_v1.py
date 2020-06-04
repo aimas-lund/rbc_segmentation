@@ -1,5 +1,7 @@
 import math
 
+import cv2 as cv
+
 from unet_model import *
 
 HEIGHT = 120
@@ -8,10 +10,11 @@ DEPTH = 3
 SHAPE = (HEIGHT, WIDTH, DEPTH)
 TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\pickles"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+#TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickle"
+#TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\callbacks"
 CALLBACK_NAME = "unet1.ckpt"
 D_TYPE = tf.float32
-
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
 
@@ -65,6 +68,11 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 model.fit(X_train,
           y_train,
           epochs=20,
-          batch_size=2,
+          batch_size=1,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
+
+cv.imshow('true', y_valid[3])
+cv.waitKey(0)
+cv.destroyAllWindows()
+display_prediction(model.predict(X_valid[3]))

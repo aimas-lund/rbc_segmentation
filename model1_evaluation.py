@@ -1,7 +1,6 @@
 import math
 
-from evaluation import predict_sample, full_speed_test
-from speed_test_setup import load_big_data
+from evaluation import predict_sample
 from unet_model import *
 
 HEIGHT = 120
@@ -69,10 +68,12 @@ model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
 y_est = predict_sample(X_valid, model)
 
+EVAL_PATH = PATH + "\\pickle\\estimations"
+save_pickle((y_valid, y_est), EVAL_PATH, "unet1_eval")
+"""
 big_X = load_big_data()
 big_X_rescaled = []
 print("Big Dataset loaded.")
-"""
 reconfig_start = time.time()
 for i in range(len(big_X)):
     img_x = tf.image.resize_with_pad(big_X[i], 256, 256, method='bilinear')
@@ -80,9 +81,8 @@ for i in range(len(big_X)):
 
 print(time.time() - reconfig_start)
 print("Big Dataset reconfigured")
-"""
 t = full_speed_test(big_X, model)
 save_pickle(t, PICKLE_PATH, PICKLE_NAME)
 
 #prec_rec_acc_plot(y_est, y_valid)
-
+"""

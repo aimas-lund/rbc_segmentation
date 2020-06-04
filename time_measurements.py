@@ -48,8 +48,7 @@ for file in data_files:
     d = load_pickle(PICKLE_PATH, file)
     x, y = calc_distribution(d)
 
-    ax.boxplot(d, positions=pos, widths=0.6, showmeans=True,
-                flierprops=outliers_props)
+    ax.boxplot(d, positions=pos, widths=0.6, flierprops=outliers_props)
     pos = [p + 1 for p in pos]
 
 ax.set_xlabel('Model Number')

@@ -5,19 +5,15 @@ import pickle
 
 import cv2
 import numpy as np
-import tensorflow as tf
 
+DIR = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 DATA_DIR = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data"
-dest = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\" \
-       "freja\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
+dest = DIR + "\\data\\aimas\\sample\\raw_masks"
 dest2 = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
         "data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B"
-source = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
-         "data\\freja\\annotations\\0_20180613_3A_4mbar_2800fps_D1B"
-pckl = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
-       "data\\freja\\pickles"
-sample = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
-         "data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B_plus_masks"
+source = DIR + "\\data\\aimas\\sample\\raw_mask_generation"
+pckl = DIR + "\\data\\aimas\\sample\\pickle"
+sample = DIR + "\\data\\aimas\\sample\\raw"
 y_path = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\" \
          "data\\freja\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
 
@@ -78,14 +74,15 @@ def masks_combine(path, include_trunc=True, dest=None):
     mapping = dict()
 
     for file in files:
-        # split the filename such that we we can match the masks
-        identifier = file.split('.')[0]
+        if 'mask' in file:
+            # split the filename such that we we can match the masks
+            identifier = file.split('.')[0]
 
-        # add files to a dictionary mapping a file-id to its masks
-        if identifier in mapping:
-            mapping[identifier].append(file)
-        else:
-            mapping[identifier] = [file]
+            # add files to a dictionary mapping a file-id to its masks
+            if identifier in mapping:
+                mapping[identifier].append(file)
+            else:
+                mapping[identifier] = [file]
 
     # define destination path for combined binaries
     if dest is None:
@@ -196,34 +193,6 @@ def pickle_training_data(X_path, y_path, dest, filename='training_data'):
     print("Pickle saved to:\n" + dest)
 
 
-def preprocess_image(img, dtype, new_shape=None, cast=False):
-    """
-    Prepares a single image as input for the NN model
-    :param cast:
-    :param img: Image array
-    :param dtype: tensorflow data type
-    :param new_shape: tuple of: width * height
-    :return: Tensor
-    """
-
-    img = tf.convert_to_tensor(img, dtype=dtype)
-
-    if new_shape is not None:
-        img = tf.image.resize_with_pad(img,
-                                       target_width=new_shape[0],
-                                       target_height=new_shape[1],
-                                       method='bilinear')
-
-    if cast:
-        img = tf.cast(img, dtype) / 255.0
-    else:
-        img = img / 255.0
-
-    return img
-
-
-"""
 mask_generate_blank(sample, dest)
 masks_combine(source, dest=dest)
-pickle_training_data(sample, y_path, pckl, filename="0_20180613_3A_4mbar_2800fps_D1B")
-"""
+pickle_training_data(sample, dest, pckl, filename="ph2_sample")

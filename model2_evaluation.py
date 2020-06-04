@@ -1,7 +1,6 @@
 import math
 
 from evaluation import *
-from speed_test_setup import load_big_data
 from unet_model import *
 
 HEIGHT = 120
@@ -70,7 +69,10 @@ model = unet_generator(NEW_SHAPE, down_stack, up_stack)
 model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
 y_est = predict_sample(X_valid, model)
+EVAL_PATH = PATH + "\\pickle\\estimations"
+save_pickle((y_valid, y_est), EVAL_PATH, "unet2_eval")
 
+"""
 big_X = load_big_data()
 big_X_rescaled = []
 print("Big Dataset loaded.")
@@ -84,7 +86,7 @@ print("Big Dataset reconfigured")
 
 t = full_speed_test(np.array(big_X_rescaled), model)
 save_pickle(t, PICKLE_PATH, PICKLE_NAME)
-
+"""
 # show_estimations(y_est)
 # TPR_FPR_plot(y_est, y_valid)
 # prec_rec_acc_plot(y_est, y_valid)
