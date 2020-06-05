@@ -1,6 +1,5 @@
 from sklearn.metrics import roc_curve, auc
 
-from evaluation import *
 from unet_model import *
 
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
@@ -14,6 +13,8 @@ colors = ['#990000', '#2F3EEA', '#1FD082', '#030F4F', '#FC7634']
 model_names = ['Model {}'.format(i+1) for i in range(5)]
 
 for i, filename in enumerate(filenames):
+    if i == 2:
+        continue
     y_true, y_est = load_pickle(EVAL_PATH, filename)
     if i == 0:
         y_true_flat = y_true.flatten() / 255
@@ -31,7 +32,7 @@ for i, filename in enumerate(filenames):
     plt.plot(fpr, tpr, color=colors[i],
              label=model_names[i] + ' (AUC = %0.2f)' % roc_auc)
 
-plt.plot([0, 1], [0, 1], color='0000000', linestyle='--')
+#plt.plot([0, 1], [0, 1], color='0000000', linestyle='--')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')

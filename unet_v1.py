@@ -13,10 +13,11 @@ TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
 #TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickle"
 #TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\callbacks"
-CALLBACK_NAME = "unet1.ckpt"
+CALLBACK_NAME = "unet1-a.ckpt"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
+STRIDES = 1
 
 #############################################
 # Data Pre-Processing
@@ -43,18 +44,18 @@ y_valid = y[:VALID_SIZE]
 
 # define encoding part of the model
 down_stack = [
-    downsample(128, 3),
-    downsample(256, 3)
+    downsample(128, 3, strides=STRIDES),
+    downsample(256, 3, strides=STRIDES)
 ]
 
 # define the decoding part of the model
 up_stack = [
-    upsample(256, 3),
-    upsample(128, 3)
+    upsample(256, 3, strides=STRIDES),
+    upsample(128, 3, strides=STRIDES)
 ]
 
 # generate and compile model
-model = unet_generator(SHAPE, down_stack, up_stack)
+model = unet_generator(SHAPE, down_stack, up_stack, strides=STRIDES)
 model_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CALLBACK_PATH, CALLBACK_NAME),
                                                     save_weights_only=True,
                                                     verbose=1)
@@ -67,7 +68,7 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 
 model.fit(X_train,
           y_train,
-          epochs=20,
+          epochs=10,
           batch_size=1,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training

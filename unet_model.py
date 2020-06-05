@@ -115,7 +115,8 @@ def unet_generator(shape, down_stack, up_stack,
 def unet_dense_generator(shape, down_stack, up_stack,
                          output_channels=1,
                          dense_layers=2,
-                         neuron_num=865):
+                         neuron_num=865,
+                         strides=2):
     input = Input(shape=shape)
     model = input
 
@@ -136,7 +137,7 @@ def unet_dense_generator(shape, down_stack, up_stack,
     transpose = Conv2DTranspose(
         output_channels,
         kernel_size=3,
-        strides=2,
+        strides=strides,
         padding='same',
         activation='relu'
     )
@@ -230,7 +231,7 @@ def display_prediction(tensor):
     plt.show()
 
 
-def rescale_images(X_raw, y_raw, size=(256, 256)):
+def rescale_images(X_raw, y_raw, size=(256, 256), flatten=False):
     X = []
     y = []
 
@@ -239,7 +240,10 @@ def rescale_images(X_raw, y_raw, size=(256, 256)):
         img_y = np.expand_dims(y_raw[i], -1)
         img_y = tf.image.resize_with_pad(img_y, size[0], size[1], method='bilinear')
         X.append(img_x.numpy() / 255.)
-        y.append(img_y.numpy() / 255.)
+        if flatten:
+            y.append(img_y.numpy().flatten() / 255.)
+        else:
+            y.append(img_y.numpy() / 255.)
 
     X = np.array(X)
     y = np.array(y)

@@ -2,22 +2,19 @@ import math
 
 from unet_model import *
 
-HEIGHT = 120
-WIDTH = 260
-DEPTH = 3
-SHAPE = (HEIGHT, WIDTH, DEPTH)
+SHAPE = (120, 260, 3)
 NEW_SHAPE = (128, 512, 3)
-BATCH_SIZE = 3
+BATCH_SIZE = 1
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 TRAINING_PATH = PATH + "\\data\\aimas\\sample\\pickles"
-TRAINING_PATH_X = PATH + "\\data\\freja\\samples\\png\\0_20180613_3A_4mbar_2800fps_D1B"
-TRAINING_PATH_Y = PATH + "\\data\\freja\\annotations_combined\\0_20180613_3A_4mbar_2800fps_D1B"
+#TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
+TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = "unet4-a.ckpt"
-TRAINING_FILE = "ph2_sample.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
+STRIDES = 1
 
 #############################################
 # Data Pre-Processing
@@ -41,24 +38,24 @@ y_valid = y[:VALID_SIZE]
 
 # define encoding part of the model
 down_stack = [
-    downsample(16, 3, strides=1),
-    downsample(32, 3, strides=1),
-    downsample(64, 3, strides=1),
-    downsample(128, 3, strides=1),
-    downsample(256, 3, strides=1)
+    downsample(16, 3, strides=STRIDES),
+    downsample(32, 3, strides=STRIDES),
+    downsample(64, 3, strides=STRIDES),
+    downsample(128, 3, strides=STRIDES),
+    downsample(256, 3, strides=STRIDES)
 ]
 
 # define the decoding part of the model
 up_stack = [
-    upsample(256, 3, strides=1),
-    upsample(128, 3, strides=1),
-    upsample(64, 3, strides=1),
-    upsample(32, 3, strides=1),
-    upsample(16, 3, strides=1)
+    upsample(256, 3, strides=STRIDES),
+    upsample(128, 3, strides=STRIDES),
+    upsample(64, 3, strides=STRIDES),
+    upsample(32, 3, strides=STRIDES),
+    upsample(16, 3, strides=STRIDES)
 ]
 
 # generate and compile model
-model = unet_generator(NEW_SHAPE, down_stack, up_stack)
+model = unet_generator(NEW_SHAPE, down_stack, up_stack, strides=STRIDES)
 model_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CALLBACK_PATH, CALLBACK_NAME),
                                                     save_weights_only=True,
                                                     verbose=1)
@@ -77,12 +74,14 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=50,
-          batch_size=1,
+          epochs=10,
+          batch_size=2,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
 
+"""
 display_prediction(model.predict(np.expand_dims(X_valid[3], 0)))
 display_prediction(model.predict(np.expand_dims(X_valid[4], 0)))
 display_prediction(model.predict(np.expand_dims(X_valid[5], 0)))
 display_prediction(model.predict(np.expand_dims(X_valid[6], 0)))
+"""
