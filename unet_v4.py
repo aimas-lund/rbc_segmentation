@@ -2,7 +2,7 @@ import math
 
 from unet_model import *
 
-SHAPE = (120, 260, 3)
+SHAPE = (200, 800, 3)
 NEW_SHAPE = (128, 512, 3)
 BATCH_SIZE = 1
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
@@ -14,7 +14,7 @@ CALLBACK_NAME = "unet4-a.ckpt"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
-STRIDES = 1
+STRIDES = 2
 
 #############################################
 # Data Pre-Processing
@@ -74,8 +74,8 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=10,
-          batch_size=2,
+          epochs=20,
+          batch_size=1,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
 

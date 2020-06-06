@@ -17,7 +17,7 @@ CALLBACK_NAME = "unet5-a.ckpt"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
-STRIDES = 1
+STRIDES = 2
 
 #############################################
 # Data Pre-Processing
@@ -79,7 +79,7 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=5,
+          epochs=20,
           batch_size=2,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training

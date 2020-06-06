@@ -3,23 +3,22 @@ import math
 from evaluation import *
 from unet_model import *
 
-SHAPE = (120, 260, 3)
+SHAPE = (200, 800, 3)
 NEW_SHAPE = (128, 512, 3)
 BATCH_SIZE = 3
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 #TRAINING_PATH = PATH + "\\data\\freja\\pickles"
 #TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickle"
+TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
 TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = "unet4-a.ckpt"
-TRAINED_MODEL_PATH = PATH + "\\trained_models\\unet4"
 PICKLE_PATH = PATH + "\\pickle"
 PICKLE_NAME = "unet4_time.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
-STRIDES = 1
+STRIDES = 2
 
 
 #############################################

@@ -2,12 +2,10 @@ import math
 
 from unet_model import *
 
-HEIGHT = 120
-WIDTH = 260
-DEPTH = 3
-SHAPE = (HEIGHT, WIDTH, DEPTH)
+SHAPE = (200, 800, 3)
+TRAN_SHAPE = (128, 512, 1)
 NEW_SHAPE = (128, 512, 3)
-BATCH_SIZE = 3
+BATCH_SIZE = 1
 # TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\data\\freja\\pickles"
 # TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
 TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
@@ -20,7 +18,7 @@ OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
 DENSE_LAYERS = 4
 NEURON_NUM = 400
-STRIDES = 1
+STRIDES = 2
 
 #############################################
 # Data Pre-Processing
@@ -79,7 +77,7 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=10,
+          epochs=20,
           batch_size=2,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
@@ -90,8 +88,8 @@ for c in check:
 
     pred = model.predict(np.expand_dims(X_valid[c], axis=0))
 
-    y_v = np.reshape(y_valid[c], (256, 256, 1))
-    pred = np.reshape(pred, (256, 256, 1))
+    y_v = np.reshape(y_valid[c], TRAN_SHAPE)
+    pred = np.reshape(pred, TRAN_SHAPE)
 
     display_prediction(X_valid[c])
     display_prediction(y_v)

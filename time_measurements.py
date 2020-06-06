@@ -1,7 +1,7 @@
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sns
 from scipy.stats import skewnorm, norm
 
 from unet_model import load_pickle
@@ -33,8 +33,10 @@ def calc_distribution(y, type='norm', lower=0.01, upper=99.99, points=100):
 
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 PICKLE_PATH = PATH + "\\pickle"
+filenumbers = [i + 1 for i in range(5)]
+data_files = ["unet{}_time.pickle".format(n) for n in filenumbers]
+model_names = ["Model {}".format(n) for n in filenumbers]
 
-data_files = os.listdir(PICKLE_PATH)
 data = []
 pos = [1]
 
@@ -44,15 +46,28 @@ outliers_props = dict(markerfacecolor='r', marker='X')
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-for file in data_files:
+
+dataframes = []
+
+for idx, file in enumerate(data_files):
     d = load_pickle(PICKLE_PATH, file)
-    x, y = calc_distribution(d)
+    N = len(d)
+    s2 = pd.DataFrame({'Time': d})
+    s1 = pd.DataFrame({'Model': [model_names[idx]] * N})
 
-    ax.boxplot(d, positions=pos, widths=0.6, flierprops=outliers_props)
-    pos = [p + 1 for p in pos]
+    dataframes.append(pd.concat([s1, s2], axis=1))
 
-ax.set_xlabel('Model Number')
-ax.set_ylabel('ms / image')
-ax.grid(linestyle='-')
+df = pd.concat(dataframes)
+
+sns.set_style("whitegrid")
+g = sns.catplot(x="Time", y="Model", whis=[0, 99],
+                height=3.5, aspect=1.5, palette="PuBuGn_d",
+                kind="box", legend=False, data=df)
+
+
+g.set_axis_labels("milliseconds / image", "")
+g.set(xlim=(4, 26), yticklabels=model_names)
+g.despine(trim=True)
+plt.setp(g.ax.get_yticklabels(), rotation=30)
 plt.show()
 

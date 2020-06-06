@@ -4,20 +4,17 @@ import cv2 as cv
 
 from unet_model import *
 
-HEIGHT = 120
-WIDTH = 260
-DEPTH = 3
-SHAPE = (HEIGHT, WIDTH, DEPTH)
-TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\pickles"
-TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-#TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickle"
-#TRAINING_FILE = "ph2_sample.pickle"
+SHAPE = (200, 800, 3)
+#TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\freja\\pickles"
+#TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
+TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\callbacks"
 CALLBACK_NAME = "unet1-a.ckpt"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
-STRIDES = 1
+STRIDES = 2
 
 #############################################
 # Data Pre-Processing
@@ -68,8 +65,8 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 
 model.fit(X_train,
           y_train,
-          epochs=10,
-          batch_size=1,
+          epochs=25,
+          batch_size=2,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
 

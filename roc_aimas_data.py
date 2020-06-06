@@ -8,13 +8,13 @@ filenames = ["unet{}_eval.pickle".format(i + 1) for i in range(5)]
 
 
 roc_auc = []
-plt.figure(figsize=(10, 5))
+rates = []
+
+#plt.figure(figsize=(10, 5))
 colors = ['#990000', '#2F3EEA', '#1FD082', '#030F4F', '#FC7634']
 model_names = ['Model {}'.format(i+1) for i in range(5)]
 
 for i, filename in enumerate(filenames):
-    if i == 2:
-        continue
     y_true, y_est = load_pickle(EVAL_PATH, filename)
     if i == 0:
         y_true_flat = y_true.flatten() / 255
@@ -26,17 +26,47 @@ for i, filename in enumerate(filenames):
     y_est_flat = y_est.flatten()
     y_true_flat = y_true_flat.astype(int)
 
+
     fpr, tpr, _ = roc_curve(y_true_flat, y_est_flat)
-    roc_auc = auc(fpr, tpr)
+    rates.append((fpr, tpr))
+    N = len(fpr)
+    #roc_auc = auc(fpr, tpr)
+    roc_auc.append(auc(fpr, tpr))
 
-    plt.plot(fpr, tpr, color=colors[i],
-             label=model_names[i] + ' (AUC = %0.2f)' % roc_auc)
+    #plt.plot(fpr, tpr, color=colors[i],
+    #         label=model_names[i] + ' (AUC = %0.2f)' % roc_auc)
 
-#plt.plot([0, 1], [0, 1], color='0000000', linestyle='--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.legend(loc="lower right")
-plt.grid()
+
+###############################
+# Plots
+###############################
+
+fig, axs = plt.subplots(2, 3, figsize=(10, 6))
+handles = []
+labels = []
+
+for i, ax in enumerate(axs.flatten()):
+    if i > 4:
+        fig.delaxes(ax)
+        break
+
+    ax.plot([0, 1], [0, 1], color='0000000', linestyle='--',
+            label="Random guessing")
+    ax.plot(rates[i][0], rates[i][1], color=colors[i],
+            label=model_names[i] + ' (AUC = %0.2f)' % roc_auc[i])
+    ax.grid()
+
+
+    handle, label = ax.get_legend_handles_labels()
+    handles.append(handle[1])
+    labels.append(label[1])
+
+    if i == 4:
+        handles.append(handle[0])
+        labels.append(label[0])
+
+fig.legend(handles, labels,
+           bbox_to_anchor=(0.4, -0.1, 0.5, 0.5))
+fig.text(0.5, 0.04, 'FP Rate', ha='center', fontsize=13)
+fig.text(0.04, 0.5, 'TP Rate', va='center', fontsize=13, rotation='vertical')
 plt.show()

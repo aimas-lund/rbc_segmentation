@@ -3,13 +3,13 @@ import math
 from evaluation import *
 from unet_model import *
 
-SHAPE = (120, 260, 3)
+SHAPE = (200, 800, 3)
 NEW_SHAPE = (128, 512, 3)
 BATCH_SIZE = 3
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 #TRAINING_PATH = PATH + "\\data\\freja\\pickles"
 #TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickle"
+TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
 TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = "unet3-a.ckpt"
@@ -20,7 +20,7 @@ OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
 DENSE_LAYERS = 4
 NEURON_NUM = 400
-STRIDES = 1
+STRIDES = 2
 
 
 #############################################
@@ -67,7 +67,7 @@ model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
 y_true_reshaped = []
 for im in y_valid:
-    y_true_reshaped.append(np.reshape(im, (SHAPE[0], SHAPE[1], 1)))
+    y_true_reshaped.append(np.reshape(im, (NEW_SHAPE[0], NEW_SHAPE[1], 1)))
 
 y_true_reshaped = np.array(y_true_reshaped)
 y_est = predict_dense_sample(X_valid, model)

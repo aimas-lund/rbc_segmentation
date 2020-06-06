@@ -3,16 +3,13 @@ import math
 from evaluation import predict_sample
 from unet_model import *
 
-HEIGHT = 120
-WIDTH = 260
-DEPTH = 3
-SHAPE = (HEIGHT, WIDTH, DEPTH)
-NEW_SHAPE = (256, 256, 3)
+SHAPE = (200, 800, 3)
+NEW_SHAPE = (128, 512, 3)
 BATCH_SIZE = 3
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 #TRAINING_PATH = PATH + "\\data\\freja\\pickles"
 #TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickle"
+TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
 TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = "unet1-a.ckpt"
@@ -23,7 +20,7 @@ PICKLE_NAME = "unet1_time-a.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
-STRIDE = 1
+STRIDE = 2
 
 
 #############################################
@@ -33,17 +30,16 @@ STRIDE = 1
 X_raw, y_raw = load_pickle(TRAINING_PATH, TRAINING_FILE)
 X = []
 y = []
-"""
-for i in range(len(X_raw)):
-    img_x = tf.image.resize_with_pad(X_raw[i], 256, 256, method='bilinear')
-    img_y = np.expand_dims(y_raw[i], -1)
-    img_y = tf.image.resize_with_pad(img_y, 256, 256, method='bilinear')
-    X.append(img_x.numpy() / 255.)
-    y.append(img_y.numpy() / 255.)
-"""
 
-X = np.array(X_raw)
-y = np.array(y_raw)
+for i in range(len(X_raw)):
+    img_y = np.expand_dims(y_raw[i], -1)
+    X.append(X_raw[i] / 255.)
+    y.append(img_y / 255.)
+
+
+X = np.array(X)
+y = np.array(y)
+
 VALID_SIZE = math.floor(VALID_FRAC * len(X_raw))   # specifies the training data split
 
 X_train = X[VALID_SIZE:]

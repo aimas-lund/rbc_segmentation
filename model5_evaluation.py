@@ -3,8 +3,8 @@ import math
 from evaluation import *
 from unet_model import *
 
-SHAPE = (120, 260, 3)
-NEW_SHAPE = (256, 256, 3)
+SHAPE = (200, 800, 3)
+NEW_SHAPE = (128, 512, 3)
 BATCH_SIZE = 3
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 #TRAINING_PATH = PATH + "\\data\\freja\\pickles"
@@ -19,7 +19,7 @@ PICKLE_NAME = "unet5_time.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
-STRIDES = 1
+STRIDES = 2
 
 
 #############################################
