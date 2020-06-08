@@ -164,11 +164,13 @@ def speed_test(X, model):
     return time.time() - start
 
 
-def full_speed_test(X, model, iters=20):
+def full_speed_test(X, model):
     times = []
+    N = np.shape(X)[0]
 
-    for iter in range(iters):
-        times.append(speed_test(X, model))
-        print("Iteration {} Complete".format(iter + 1))
+    for i in range(N):
+        input = np.expand_dims(X[i], 0)
+        times.append(speed_test(input, model))
 
     return times
+
