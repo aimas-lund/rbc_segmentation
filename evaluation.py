@@ -45,6 +45,13 @@ def eval_recall_precision(x, y):
         return 0
 
 
+def eval_jaccard(x, a, b):
+    try:
+        return x / (x + a + b)
+    except ZeroDivisionError:
+        return 0
+
+
 def eval_accuracy(x, y, a, b):
     try:
         return (x + y) / (x + b + a + y)
@@ -119,16 +126,17 @@ def TPR_FPR_plot(y_est, y_true):
     plt.show()
 
 
-def prec_rec_acc_plot(y_est, y_true):
+def prec_rec_jac(y_est, y_true):
     y_est = y_est.flatten()
     y_true = y_true.flatten()
     boolean_true = y_true > 0
-    thresholds = np.arange(0, 1, 0.001)
+    thresholds = np.arange(0, 1, 0.01)
     total = len(thresholds)
 
     x = thresholds.tolist()
     y_rec = []
     y_pre = []
+    y_jac = []
 
     for idx, t in enumerate(thresholds):
         print("{} of {} iterations.".format(idx + 1, total))
@@ -137,15 +145,20 @@ def prec_rec_acc_plot(y_est, y_true):
 
         y_rec.append(eval_recall_precision(TP, FN))
         y_pre.append(eval_recall_precision(TP, FP))
+        y_jac.append(eval_jaccard(TP, FP, FN))
 
-    # print precision and recall
-    plt.plot(x, y_pre, color=color_dict['blue'])
-    plt.plot(x, y_rec, color=color_dict['grey'], linestyle='dashed')
-    plt.legend(['Precision', 'Recall', 'Accuracy'])
-    plt.xlabel('threshold')
-    plt.ylabel('rate')
-    plt.grid()
-    plt.show()
+    return x, y_rec, y_pre, y_jac
+"""
+# print precision and recall
+plt.plot(x, y_pre, color=color_dict['blue'])
+plt.plot(x, y_rec, color=color_dict['grey'], linestyle='dashed')
+plt.plot(x, y_jac, color='red', ls='dashdot')
+plt.legend(['Precision', 'Recall', 'Jaccard Coefficient'])
+plt.xlabel('threshold')
+plt.ylabel('rate')
+plt.grid()
+plt.show()
+"""
 
 
 def show_estimations(y_est, dense=False):
@@ -173,4 +186,3 @@ def full_speed_test(X, model):
         times.append(speed_test(input, model))
 
     return times
-

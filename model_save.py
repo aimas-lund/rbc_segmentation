@@ -1,12 +1,15 @@
 import math
 
+import cv2 as cv
+
 from evaluation import *
+from speed_test_setup import *
 from unet_model import *
 
 SHAPE = (120, 260, 3)
 NEW_SHAPE = (256, 256, 3)
 BATCH_SIZE = 1
-NAME = "unet1"
+NAME = "unet2"
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 TRAINING_PATH = PATH + "\\data\\freja\\pickles"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
@@ -20,6 +23,9 @@ PICKLE_PATH = PATH + "\\pickle\\time"
 PICKLE_NAME = NAME + "_time.pickle"
 METRIC_PATH = PATH + "\\pickle\\metrics"
 METRIC_NAME = NAME + "_metrics.pickle"
+SAVED_MODEL_PATH = PATH + "\\models"
+MODEL_NAME = "model2.h5"
+TRANSFORMED_PATH = PATH + "\\zip"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
@@ -31,17 +37,8 @@ STRIDE = 2
 #############################################
 
 X_raw, y_raw = load_pickle(TRAINING_PATH, TRAINING_FILE)
-X = []
-y = []
 
-for i in range(len(X_raw)):
-    img_y = np.expand_dims(y_raw[i], -1)
-    X.append(X_raw[i] / 255.)
-    y.append(img_y / 255.)
-
-
-X = np.array(X)
-y = np.array(y)
+X, y = rescale_images(X_raw, y_raw, size=NEW_SHAPE)
 
 VALID_SIZE = math.floor(VALID_FRAC * len(X_raw))   # specifies the training data split
 
@@ -50,7 +47,15 @@ X_valid = X[:VALID_SIZE]
 y_train = y[VALID_SIZE:]
 y_valid = y[:VALID_SIZE]
 
+
+#############################################
+# Model Generation
+#############################################
+
+# define encoding part of the model
 down_stack = [
+    downsample(32, 3, strides=STRIDE),
+    downsample(64, 3, strides=STRIDE),
     downsample(128, 3, strides=STRIDE),
     downsample(256, 3, strides=STRIDE)
 ]
@@ -58,21 +63,16 @@ down_stack = [
 # define the decoding part of the model
 up_stack = [
     upsample(256, 3, strides=STRIDE),
-    upsample(128, 3, strides=STRIDE)
+    upsample(128, 3, strides=STRIDE),
+    upsample(64, 3, strides=STRIDE),
+    upsample(32, 3, strides=STRIDE)
 ]
 
 # generate and compile model
-model = unet_generator(SHAPE, down_stack, up_stack, strides=STRIDE)
+model = unet_generator(NEW_SHAPE, down_stack, up_stack, strides=STRIDE)
 model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
-y_est = predict_sample(X_valid, model)
-
-"""
-EVAL_PATH = PATH + "\\pickle\\estimations"
-save_pickle((y_valid, y_est), EVAL_PATH, "unet1-a_eval")
-
-big_X = load_big_data(type='aimas')
-big_X_rescaled = []
+big_X = load_big_data(type='freja')
 t_transform = []
 print("Big Dataset loaded.")
 
@@ -81,13 +81,5 @@ for i in range(len(big_X)):
     img_x = tf.image.resize_with_pad(big_X[i], NEW_SHAPE[0],
                                      NEW_SHAPE[1], method='bilinear')
     t_transform.append(reconfig_start - time.time())
-    big_X_rescaled.append(img_x.numpy() / 255.)
-
-print("Big Dataset reconfigured")
-#t = speed_test(X, model)
-#save_pickle(t, PICKLE_PATH, PICKLE_NAME)
-t_est = full_speed_test(big_X, model)
-save_pickle((t_transform, t_est), PICKLE_PATH, PICKLE_NAME)
-"""
-
-save_pickle(prec_rec_jac(y_est, y_valid), METRIC_PATH, METRIC_NAME)
+    img = img_x.numpy()
+    cv.imwrite(TRANSFORMED_PATH + "\\img%i.png" % i, img)
