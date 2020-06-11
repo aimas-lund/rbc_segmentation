@@ -1,21 +1,25 @@
 import math
 
 from evaluation import *
-from speed_test_setup import *
 from unet_model import *
 
-SHAPE = (200, 800, 3)
-NEW_SHAPE = (128, 512, 3)
+SHAPE = (120, 260, 3)
+NEW_SHAPE = (256, 256, 3)
 BATCH_SIZE = 1
+NAME = "unet4"
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
-#TRAINING_PATH = PATH + "\\data\\freja\\pickles"
-#TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
-TRAINING_FILE = "ph2_sample.pickle"
+TRAINING_PATH = PATH + "\\data\\freja\\pickles"
+TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+#TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
+#TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = PATH + "\\callbacks"
-CALLBACK_NAME = "unet4-a.ckpt"
+CALLBACK_NAME = NAME + ".ckpt"
+BIG_DATASET_PATH = PATH + "\\data\\freja\\pickles"
+BIG_DATASET_NAME = "speed_test_data.pickle"
 PICKLE_PATH = PATH + "\\pickle\\time"
-PICKLE_NAME = "unet4-a_time.pickle"
+PICKLE_NAME = NAME + "_time.pickle"
+METRIC_PATH = PATH + "\\pickle\\metrics"
+METRIC_NAME = NAME + "_metrics.pickle"
 D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
@@ -68,7 +72,6 @@ y_est = predict_sample(X_valid, model)
 """
 EVAL_PATH = PATH + "\\pickle\\estimations"
 save_pickle((y_valid, y_est), EVAL_PATH, "unet3-a_eval")
-"""
 
 big_X = load_big_data(type='aimas')
 big_X_rescaled = []
@@ -88,7 +91,8 @@ print("Big Dataset reconfigured")
 #save_pickle(t, PICKLE_PATH, PICKLE_NAME)
 t_est = full_speed_test(big_X_rescaled, model)
 save_pickle((t_transform, t_est), PICKLE_PATH, PICKLE_NAME)
-
+"""
 #show_estimations(y_est)
 #TPR_FPR_plot(y_est, y_valid)
-#prec_rec_acc_plot(y_est, y_valid)
+
+save_pickle(prec_rec_jac(y_est, y_valid), METRIC_PATH, METRIC_NAME)
