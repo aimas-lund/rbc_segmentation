@@ -34,16 +34,8 @@ def calc_distribution(y, type='norm', lower=0.01, upper=99.99, points=100):
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 PICKLE_PATH = PATH + "\\pickle\\time"
 filenumbers = [i + 1 for i in range(5)]
-data_files = ["unet{}-a_time.pickle".format(n) for n in filenumbers]
+data_files = ["unet{}_time.pickle".format(n) for n in filenumbers]
 model_names = ["Model {}".format(n) for n in filenumbers]
-
-data = []
-pos = [1]
-
-# Plot Details
-#outliers_props = dict(markerfacecolor='r', marker='X')
-
-
 
 dataframes = []
 batches = []
