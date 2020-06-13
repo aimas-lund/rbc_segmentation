@@ -1,17 +1,19 @@
 import math
 
+import matplotlib.pyplot as plt
+
 from evaluation import *
 from unet_model import *
 
-SHAPE = (120, 260, 3)
-NEW_SHAPE = (256, 256, 3)
+SHAPE = (200, 800, 3)
+NEW_SHAPE = (128, 512, 3)
 BATCH_SIZE = 1
-NAME = "unet2"
+NAME = "unet2-a"
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
-TRAINING_PATH = PATH + "\\data\\freja\\pickles"
-TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-#TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
-#TRAINING_FILE = "ph2_sample.pickle"
+#TRAINING_PATH = PATH + "\\data\\freja\\pickles"
+#TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
+TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = NAME + ".ckpt"
 BIG_DATASET_PATH = PATH + "\\data\\freja\\pickles"
@@ -66,8 +68,32 @@ up_stack = [
 model = unet_generator(NEW_SHAPE, down_stack, up_stack, strides=STRIDE)
 model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
+threshold = 0.02
+#crop = (68, 185)
+crop = (0, 128)
+image_name = "pred"
+IMAGE_PATH = PATH + "\\graphics\\model_predictions\\m2a"
 
 y_est = predict_sample(X_valid, model)
+for i in range(len(y_est)):
+    name = image_name + "%i.png" % (i + 1)
+    fig, ax = plt.subplots(1, 2, figsize=(18, 6))
+    empty = np.zeros((NEW_SHAPE[0], NEW_SHAPE[1], 2))
+    y_true = np.concatenate((y_valid[i] * 255, empty), axis=-1).astype(int)
+    ax[0].imshow(X_valid[i][crop[0]:crop[1], :, :])
+    ax[0].imshow(y_true[crop[0]:crop[1], :, :], alpha=0.5)
+    ax[0].set_title("Ground Truth Mask")
+    ax[0].axis('off')
+
+    y_mask = np.where(np.squeeze(y_est[i], axis=0)>threshold, 1, 0)
+    y_mask = np.concatenate((y_mask * 255, empty), axis=-1).astype(int)
+    ax[1].imshow(X_valid[i][crop[0]:crop[1], :, :])
+    ax[1].imshow(y_mask[crop[0]:crop[1], :, :], alpha=0.5)
+    ax[1].set_title("Prediction Mask")
+    ax[1].axis('off')
+
+    plt.savefig(IMAGE_PATH + "\\" + name)
+    plt.close(fig)
 
 """
 EVAL_PATH = PATH + "\\pickle\\estimations"
@@ -96,5 +122,5 @@ save_pickle((t_transform, t_est), PICKLE_PATH, PICKLE_NAME)
 
 # show_estimations(y_est)
 # TPR_FPR_plot(y_est, y_valid)
-save_pickle(prec_rec_jac(y_est, y_valid), METRIC_PATH, METRIC_NAME)
+# save_pickle(prec_rec_jac(y_est, y_valid), METRIC_PATH, METRIC_NAME)
 
