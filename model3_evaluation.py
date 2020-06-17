@@ -3,15 +3,15 @@ import math
 from evaluation import *
 from unet_model import *
 
-SHAPE = (120, 260, 3)
-NEW_SHAPE = (256, 256, 3)
+SHAPE = (200, 800, 3)
+NEW_SHAPE = (128, 512, 3)
 BATCH_SIZE = 1
-NAME = "unet3"
+NAME = "unet3-a"
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
-TRAINING_PATH = PATH + "\\data\\freja\\pickles"
-TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-#TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
-#TRAINING_FILE = "ph2_sample.pickle"
+#TRAINING_PATH = PATH + "\\data\\freja\\pickles"
+#TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
+TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = NAME + ".ckpt"
 PICKLE_PATH = PATH + "\\pickle\\time"
@@ -22,7 +22,7 @@ D_TYPE = tf.float32
 OUTPUT_CHANNELS = 1
 VALID_FRAC = 0.15
 DENSE_LAYERS = 4
-NEURON_NUM = 800
+NEURON_NUM = 400
 STRIDES = 2
 
 

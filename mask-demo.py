@@ -1,12 +1,11 @@
 import math
 
-from evaluation import *
 from unet_model import *
 
 SHAPE = (120, 260, 3)
 NEW_SHAPE = (256, 256, 3)
 BATCH_SIZE = 1
-NAME = "unet1"
+NAME = "unet2"
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 TRAINING_PATH = PATH + "\\data\\freja\\pickles"
 TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
@@ -29,6 +28,7 @@ STRIDE = 2
 #############################################
 # Data Pre-Processing
 #############################################
+
 X_raw, y_raw = load_pickle(TRAINING_PATH, TRAINING_FILE)
 
 X, y = rescale_images(X_raw, y_raw, size=NEW_SHAPE)
@@ -40,7 +40,15 @@ X_valid = X[:VALID_SIZE]
 y_train = y[VALID_SIZE:]
 y_valid = y[:VALID_SIZE]
 
+
+#############################################
+# Model Generation
+#############################################
+
+# define encoding part of the model
 down_stack = [
+    downsample(32, 3, strides=STRIDE),
+    downsample(64, 3, strides=STRIDE),
     downsample(128, 3, strides=STRIDE),
     downsample(256, 3, strides=STRIDE)
 ]
@@ -48,36 +56,33 @@ down_stack = [
 # define the decoding part of the model
 up_stack = [
     upsample(256, 3, strides=STRIDE),
-    upsample(128, 3, strides=STRIDE)
+    upsample(128, 3, strides=STRIDE),
+    upsample(64, 3, strides=STRIDE),
+    upsample(32, 3, strides=STRIDE)
 ]
 
 # generate and compile model
 model = unet_generator(NEW_SHAPE, down_stack, up_stack, strides=STRIDE)
 model.load_weights(os.path.join(CALLBACK_PATH, CALLBACK_NAME))
 
-y_est = predict_sample(X_valid, model)
+crop = (68, 185)
+empty = np.zeros((NEW_SHAPE[0], NEW_SHAPE[1], 2))
 
+index = 2
 
-EVAL_PATH = PATH + "\\pickle\\estimations"
-save_pickle((y_valid, y_est), EVAL_PATH, "unet1_eval")
-"""
-big_X = load_big_data(type='aimas')
-big_X_rescaled = []
-t_transform = []
-print("Big Dataset loaded.")
+y_mask = y_valid[index] * 255
+x = X_valid[index]
+y_mask_white = np.concatenate((y_mask, y_mask, y_mask), axis=-1)
+y_mask = np.concatenate((y_mask, empty), axis=-1)
 
-for i in range(len(big_X)):
-    reconfig_start = time.time()
-    img_x = tf.image.resize_with_pad(big_X[i], NEW_SHAPE[0],
-                                     NEW_SHAPE[1], method='bilinear')
-    t_transform.append(reconfig_start - time.time())
-    big_X_rescaled.append(img_x.numpy() / 255.)
+plt.imshow(x[crop[0]:crop[1], :, :])
+plt.axis('off')
+plt.show()
+plt.imshow(y_mask_white[crop[0]:crop[1], :, :])
+plt.axis('off')
+plt.show()
 
-print("Big Dataset reconfigured")
-#t = speed_test(X, model)
-#save_pickle(t, PICKLE_PATH, PICKLE_NAME)
-t_est = full_speed_test(big_X, model)
-save_pickle((t_transform, t_est), PICKLE_PATH, PICKLE_NAME)
-"""
-
-#save_pickle(prec_rec_jac(y_est, y_valid), METRIC_PATH, METRIC_NAME)
+plt.imshow(x[crop[0]:crop[1], :, :])
+plt.imshow(y_mask[crop[0]:crop[1], :, :], alpha=0.5)
+plt.axis('off')
+plt.show()

@@ -2,7 +2,7 @@ from unet_model import *
 
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 EVAL_PATH = PATH + "\\pickle\\metrics"
-filenames = ["unet{}_metrics.pickle".format(i + 1) for i in range(5)]
+filenames = ["unet{}-a_metrics.pickle".format(i + 1) for i in range(5)]
 metrics = ['Recall', 'Precision', 'Jaccard Coefficient']
 
 
@@ -58,8 +58,8 @@ text_pos = [
     (0.16, 0.63, 0.5, 0.5),
     (0.44, 0.63, 0.5, 0.5),
     (0.72, 0.70, 0.5, 0.5),
-    (0.16, 0.2, 0.5, 0.5),
-    (0.44, 0.15, 0.5, 0.5),
+    (0.2, 0.25, 0.5, 0.5),
+    (0.44, 0.3, 0.5, 0.5),
 ]
 
 for i, pos in enumerate(text_pos):

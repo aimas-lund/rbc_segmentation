@@ -4,17 +4,19 @@ import time
 import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 import tensorflow as tf
 
 
-def load_images(path):
+def load_images(path, CAP=100):
     data = []
     files = os.listdir(path)
+    c = 0
 
     for idx, file in enumerate(files):
         data.append(cv.imread(os.path.join(path, file)))
+        c += 1
+        if c >= CAP:
+            break
 
     print("Data loaded successfully!")
     return np.array(data)
@@ -35,6 +37,12 @@ def full_speed_test(X, model):
         times.append(speed_test(input, model))
 
     return times
+
+def show_estimations(y_est):
+    for im in y_est:
+        im = np.squeeze(im, axis=-1)
+        plt.imshow(im, cmap='gray')
+        plt.show()
 
 ############################################
 # PARAMETERS
@@ -57,7 +65,12 @@ model.compile(optimizer='adam',
 
 print("Loading images...")
 data = load_images(DATA_PATH)
+d = data[0]
+y_est = model.predict(np.expand_dims(d, axis=0))
 
+show_estimations(y_est)
+
+"""
 print("Performing time benchmark...")
 t_est = full_speed_test(data, model)
 
@@ -82,3 +95,4 @@ g.set(xlim=xlim, yticklabels=model_name)
 g.despine(trim=True)
 plt.setp(g.ax.get_yticklabels(), rotation=30)
 plt.show()
+"""

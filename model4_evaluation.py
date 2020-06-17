@@ -120,4 +120,4 @@ save_pickle((t_transform, t_est), PICKLE_PATH, PICKLE_NAME)
 """
 #show_estimations(y_est)
 #TPR_FPR_plot(y_est, y_valid)
-#save_pickle(prec_rec_jac(y_est, y_valid), METRIC_PATH, METRIC_NAME)
+save_pickle(prec_rec_jac(y_est, y_valid), METRIC_PATH, METRIC_NAME)

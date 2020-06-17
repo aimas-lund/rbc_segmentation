@@ -8,6 +8,9 @@ BATCH_SIZE = 3
 PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project"
 TRAINING_PATH = PATH + "\\data\\aimas\\sample\\pickles"
 TRAINING_FILE = "ph2_sample.pickle"
+#TRAINING_PATH = PATH + "\\data\\freja\\pickles"
+#TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+LOG_PATH = PATH + "\\logs"
 CALLBACK_PATH = PATH + "\\callbacks"
 CALLBACK_NAME = "unet2-a.ckpt"
 D_TYPE = tf.float32
@@ -56,7 +59,7 @@ model = unet_generator(NEW_SHAPE, down_stack, up_stack, strides=STRIDES)
 model_callback = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CALLBACK_PATH, CALLBACK_NAME),
                                                     save_weights_only=True,
                                                     verbose=1)
-opt = tf.keras.optimizers.Adam(learning_rate=0.00005)   # optimizer and specified learning rate
+opt = tf.keras.optimizers.Adam(learning_rate=0.0001)   # optimizer and specified learning rate
 model.compile(optimizer=opt,
               loss=tf.losses.BinaryCrossentropy(from_logits=True),
               metrics=['accuracy'])
@@ -71,14 +74,7 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 # training the model
 model.fit(X_train,
           y_train,
-          epochs=20,
+          epochs=10,
           batch_size=1,
           validation_data=(X_valid, y_valid),
           callbacks=[model_callback])  # Pass callback to training
-
-"""
-display_prediction(model.predict(np.expand_dims(X_valid[3], 0)))
-display_prediction(model.predict(np.expand_dims(X_valid[4], 0)))
-display_prediction(model.predict(np.expand_dims(X_valid[5], 0)))
-display_prediction(model.predict(np.expand_dims(X_valid[6], 0)))
-"""
