@@ -1,15 +1,16 @@
 import math
+import time
 
 from unet_model import *
 
-SHAPE = (200, 800, 3)
-TRAN_SHAPE = (128, 512, 1)
-NEW_SHAPE = (128, 512, 3)
+SHAPE = (120, 260, 3)
+TRAN_SHAPE = (256, 256, 1)
+NEW_SHAPE = (256, 256, 3)
 BATCH_SIZE = 1
-# TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\data\\freja\\pickles"
-# TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
-TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
-TRAINING_FILE = "ph2_sample.pickle"
+TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\data\\freja\\pickles"
+TRAINING_FILE = "0_20180613_3A_4mbar_2800fps_D1B.pickle"
+#TRAINING_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\data\\aimas\\sample\\pickles"
+#TRAINING_FILE = "ph2_sample.pickle"
 CALLBACK_PATH = "C:\\Users\\Aimas\\Desktop\\DTU\\01-BSc\\6_semester\\01_Bachelor_Project\\callbacks"
 CALLBACK_NAME = "unet3-a.ckpt"
 
@@ -75,22 +76,11 @@ tf.keras.utils.plot_model(model, show_shapes=True)
 #############################################
 
 # training the model
+t = time.time()
 model.fit(X_train,
           y_train,
-          epochs=20,
-          batch_size=2,
-          validation_data=(X_valid, y_valid),
-          callbacks=[model_callback])  # Pass callback to training
-
-check = [0, 5, 7, 8, 10]
-
-for c in check:
-
-    pred = model.predict(np.expand_dims(X_valid[c], axis=0))
-
-    y_v = np.reshape(y_valid[c], TRAN_SHAPE)
-    pred = np.reshape(pred, TRAN_SHAPE)
-
-    display_prediction(X_valid[c])
-    display_prediction(y_v)
-    display_prediction(pred)
+          epochs=10,
+          batch_size=1,
+          validation_data=(X_valid, y_valid))
+#          callbacks=[model_callback])  # Pass callback to training
+print(time.time() - t)

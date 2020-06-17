@@ -146,9 +146,9 @@ def unet_dense_generator(shape, down_stack, up_stack,
     model = Flatten()(model)
 
     # add dense layers
-    output_neurons = shape[0]*shape[1]
+    output_neurons = shape[0] * shape[1]
 
-    for _ in range(dense_layers-1):
+    for _ in range(dense_layers - 1):
         dense = Dense(neuron_num,
                       activation='relu')
         model = dense(model)
@@ -250,3 +250,16 @@ def rescale_images(X_raw, y_raw, size=(256, 256), flatten=False):
     print("Rescale Complete")
 
     return X, y
+
+
+def rescale_X(X_raw, size=(256, 256)):
+    X = []
+
+    for i in range(len(X_raw)):
+        img_x = tf.image.resize_with_pad(X_raw[i], size[0], size[1], method='bilinear')
+        X.append(img_x.numpy() / 255.)
+
+    X = np.array(X)
+    print("Rescale Complete")
+
+    return X

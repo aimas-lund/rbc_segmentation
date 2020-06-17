@@ -114,8 +114,15 @@ def TPR_FPR_plot(y_est, y_true):
                 fp += 1
 
         x.append(t)
-        y_tp.append(tp / N)
-        y_fp.append(fp / N)
+        try:
+            y_tp.append(tp / N)
+        except ZeroDivisionError:
+            y_tp.append(0)
+        try:
+            y_fp.append(fp / N)
+        except ZeroDivisionError:
+            y_fp.append(0)
+
 
     plt.plot(x, y_tp, color=color_dict['blue'])
     plt.plot(x, y_fp, color=color_dict['grey'], linestyle='dashed')
